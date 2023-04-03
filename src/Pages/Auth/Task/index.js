@@ -610,10 +610,10 @@ function TaskPage() {
                       <strong>Attachment</strong>
                     </td>
                     <td style={{ verticalAlign: "top" }}>:</td>
-                    {detailTasksFile.length > 0 ? (
-                      <ul>
-                        {detailTasksFile.map((file) => (
-                          <li key={file.uuid}>
+                    <td style={{ verticalAlign: "top", paddingLeft: "5px" }}>
+                      {detailTasksFile.length > 0 ? (
+                        <>
+                          {detailTasksFile.map((file) => (
                             <a
                               onClick={() => downloadFile(file.file_name)}
                               style={{
@@ -624,12 +624,12 @@ function TaskPage() {
                             >
                               {file.file_name}
                             </a>
-                          </li>
-                        ))}
-                      </ul>
-                    ) : (
-                      "No attachment"
-                    )}
+                          ))}
+                        </>
+                      ) : (
+                        "No attachment"
+                      )}
+                    </td>
                   </tr>
                   <tr>
                     <td style={{ verticalAlign: "top" }}>

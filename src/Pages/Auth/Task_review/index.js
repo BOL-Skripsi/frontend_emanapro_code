@@ -215,8 +215,14 @@ function TaskPage() {
   const customStyles = {
     headCells: {
       style: {
+        border: "1px dotted black",
         fontSize: "14px",
         fontWeight: "bold",
+      },
+    },
+    cells: {
+      style: {
+        border: "1px dotted black",
       },
     },
   };

@@ -111,7 +111,7 @@ function RubricPage() {
     setNewComment(event.target.value);
   };
   const handleNewStatusChange = (event) => {
-    setNewStatus(event.target.value);
+    setNewStatus(event.value);
   };
 
   const handleSubmitReview = async (event) => {
@@ -279,7 +279,7 @@ function RubricPage() {
                     </td>
                     <td style={{ paddingLeft: "5px", width: "100%" }}>
                       <Select
-                        onChange={(event) => setNewStatus(event.value)}
+                        onChange={(event) => handleNewStatusChange(event)}
                         options={statusOptions}
                       />
                     </td>
