@@ -348,14 +348,14 @@ function TaskPage() {
         <div className="container-fluid">
           <div className="row mb-2">
             <div className="col-sm-6">
-              <h1 className="m-0">Task</h1>
+              <h1 className="m-0">Task Management</h1>
             </div>
             <div className="col-sm-6">
               <ol className="breadcrumb float-sm-right">
                 <li className="breadcrumb-item">
                   <a href="#">Home</a>
                 </li>
-                <li className="breadcrumb-item active">Task</li>
+                <li className="breadcrumb-item active">Task Management</li>
               </ol>
             </div>
             {/* /.col */}
@@ -368,8 +368,8 @@ function TaskPage() {
       {/* Main content */}
       <section className="content">
         <div className="container-fluid">
-          <Tabs defaultActiveKey="personal" id="task-tabs">
-            <Tab eventKey="personal" title="Personal Task">
+          <Tabs defaultActiveKey="team" id="task-tabs">
+            {/* <Tab eventKey="personal" title="Personal Task">
               <div className="row">
                 <div className="col-md-12">
                   <div className="card">
@@ -397,7 +397,7 @@ function TaskPage() {
                   </div>
                 </div>
               </div>
-            </Tab>
+            </Tab> */}
             <Tab eventKey="team" title="Team Task">
               <div className="row">
                 <div className="col-md-12">
@@ -697,7 +697,7 @@ function TaskPage() {
               />
             </Form.Group>
             <Form.Group>
-              <Form.Label>With</Form.Label>
+              <Form.Label>Assign To</Form.Label>
               <Select
                 options={teamMemberData}
                 placeholder="Select user"

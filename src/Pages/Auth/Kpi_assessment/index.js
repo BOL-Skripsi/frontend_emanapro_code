@@ -17,6 +17,13 @@ function EmployeePage() {
   const full = true;
   const [selectedRubric, setSelectedRubric] = useState(null);
 
+  const scoreOption = [
+    { value: "5", label: "5" },
+    { value: "4", label: "4" },
+    { value: "3", label: "3" },
+    { value: "2", label: "2" },
+    { value: "1", label: "1" },
+  ];
   let i = 1;
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -96,7 +103,9 @@ function EmployeePage() {
     );
     setShowMemberKpiModal(true);
   };
-
+  const handleSubmitAssessment = (event) => {
+    console.log();
+  };
   const handleDetailKpiClick = (row) => {
     setSelectedRubric(row);
     fetchKpiTeamData(row.user_id, row.assessment_due_date_uuid);
@@ -382,54 +391,76 @@ function EmployeePage() {
           </Button>
         </Modal.Header>
         <Modal.Body>
-          <table border={"1"} cellPadding={"5"} width={"100%"}>
-            <thead>
-              <tr>
-                <th rowSpan={"2"} style={{ textAlign: "center" }}>
-                  No.
-                </th>
-                <th rowSpan={"2"} style={{ textAlign: "center" }}>
-                  Key Responsibilities
-                </th>
-                <th colSpan={"2"} style={{ textAlign: "center" }}>
-                  Key Performance Indicator(KPI)
-                </th>
-                <th rowSpan={"2"} style={{ textAlign: "center" }}>
-                  Weight %
-                </th>
-                <th rowSpan={"2"} style={{ textAlign: "center" }}>
-                  Tracking Source
-                </th>
-                <th colSpan={"2"} style={{ textAlign: "center" }}>
-                  Assessment
-                </th>
-              </tr>
-              <tr>
-                <th style={{ textAlign: "center" }}>Work Order</th>
-                <th style={{ textAlign: "center" }} width={"300px"}>
-                  Measurement
-                </th>
-                <th style={{ textAlign: "center" }}>
-                  A Brief Description of Work Results
-                </th>
-                <th style={{ textAlign: "center" }}>Score</th>
-              </tr>
-            </thead>
-            <tbody>
-              {kpiTeamMemberData.map((data) => (
-                <tr>
-                  <td style={{ textAlign: "center" }}>{i++}</td>
-                  <td>{data.performance_metric}</td>
-                  <td>{data.description}</td>
-                  <td>{data.criteria}</td>
-                  <td>{data.weight}</td>
-                  <td>{data.data_source}</td>
-                  <td>{data.uraian_kinerja}</td>
-                  <td>{data.score ? data.score : "Test nilai"}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <Form onSubmit={handleSubmitAssessment}>
+            <div className="card-body">
+              <div>
+                <table border={"1"} cellPadding={"5"} width={"100%"}>
+                  <thead>
+                    <tr>
+                      <th rowSpan={"2"} style={{ textAlign: "center" }}></th>
+                      <th rowSpan={"2"} style={{ textAlign: "center" }}>
+                        No.
+                      </th>
+                      <th rowSpan={"2"} style={{ textAlign: "center" }}>
+                        Key Responsibilities
+                      </th>
+                      <th colSpan={"2"} style={{ textAlign: "center" }}>
+                        Key Performance Indicator(KPI)
+                      </th>
+                      <th rowSpan={"2"} style={{ textAlign: "center" }}>
+                        Weight %
+                      </th>
+                      <th rowSpan={"2"} style={{ textAlign: "center" }}>
+                        Tracking Source
+                      </th>
+                      <th colSpan={"2"} style={{ textAlign: "center" }}>
+                        Assessment
+                      </th>
+                    </tr>
+                    <tr>
+                      <th style={{ textAlign: "center" }}>Work Order</th>
+                      <th style={{ textAlign: "center" }} width={"250px"}>
+                        Measurement
+                      </th>
+                      <th style={{ textAlign: "center" }}>
+                        A Brief Description of Work Results
+                      </th>
+                      <th style={{ textAlign: "center" }}>Score</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {kpiTeamMemberData.map((data) => (
+                      <tr>
+                        <td>
+                          <input type="checkbox" />
+                        </td>
+                        <td style={{ textAlign: "center" }}>{i++}</td>
+                        <td>{data.performance_metric}</td>
+                        <td>{data.description}</td>
+                        <td>{data.criteria}</td>
+                        <td>{data.weight}</td>
+                        <td>{data.data_source}</td>
+                        <td>{data.uraian_kinerja}</td>
+                        <td width={"150px"}>
+                          {data.score === "manual" ? (
+                            data.score
+                          ) : (
+                            <Select
+                              options={scoreOption}
+                              placeholder="Select score"
+                            />
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div style={{ paddingTop: "10px" }}>
+                <Button type="submit">Submit</Button>
+              </div>
+            </div>
+          </Form>
         </Modal.Body>
       </Modal>
     </div>
