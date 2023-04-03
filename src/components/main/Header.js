@@ -14,7 +14,7 @@ const Header = () => {
     <div>
       <nav className="main-header navbar navbar-expand navbar-white navbar-light">
         {/* Left navbar links */}
-        <ul className="navbar-nav">
+        {/* <ul className="navbar-nav">
           <li className="nav-item">
             <a
               className="nav-link"
@@ -30,7 +30,7 @@ const Header = () => {
               Home
             </a>
           </li>
-        </ul>
+        </ul> */}
         {/* Right navbar links */}
         <ul className="navbar-nav ml-auto">
           <li className="nav-item">
@@ -42,7 +42,7 @@ const Header = () => {
               href="#"
               role="button"
             >
-              <i className="fas fa-th-large" />
+              <i className="fas fa-sign-out-alt"></i>
             </a>
           </li>
         </ul>

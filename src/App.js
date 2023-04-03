@@ -26,6 +26,22 @@ function App() {
           }
         />
         <Route
+          path="/kpi_review/"
+          element={
+            <RequireAuth loginPath="/login">
+              <AuthLayout page="kpi_review" />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/kpi_assessment/"
+          element={
+            <RequireAuth loginPath="/login">
+              <AuthLayout page="kpi_assessment" />
+            </RequireAuth>
+          }
+        />
+        <Route
           path="/team/"
           element={
             <RequireAuth loginPath="/login">
@@ -34,10 +50,26 @@ function App() {
           }
         />
         <Route
+          path="/team_management/"
+          element={
+            <RequireAuth loginPath="/login">
+              <AuthLayout page="team_management" />
+            </RequireAuth>
+          }
+        />
+        <Route
           path="/task/"
           element={
             <RequireAuth loginPath="/login">
               <AuthLayout page="task" />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/task_management/"
+          element={
+            <RequireAuth loginPath="/login">
+              <AuthLayout page="task_management" />
             </RequireAuth>
           }
         />
@@ -54,6 +86,14 @@ function App() {
           element={
             <RequireAuth loginPath="/login">
               <AuthLayout page="rubric" />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/rubric_review/"
+          element={
+            <RequireAuth loginPath="/login">
+              <AuthLayout page="rubric_review" />
             </RequireAuth>
           }
         />

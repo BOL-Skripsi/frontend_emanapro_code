@@ -1,13 +1,21 @@
 import React, { useState, useEffect } from "react";
 import DataTable from "react-data-table-component";
-import axios from "axios";
 import Cookies from "js-cookie";
-function TeamPage() {
-  const [teamData, setTeamData] = useState([]);
-  const [newTeam, setNewTeam] = useState([]);
-  const [showForm, setShowForm] = useState(false);
-  const { id } = "71152531-e247-467f-8839-b78c14d7f71e";
-  const fetchTeamList = async () => {
+import { Modal, Button, Form, Badge } from "react-bootstrap";
+import { useAuthUser } from "react-auth-kit";
+import Select from "react-select";
+import axios from "axios";
+import Tab from "react-bootstrap/Tab";
+import Tabs from "react-bootstrap/Tabs";
+
+function TaskPage() {
+  const auth = useAuthUser();
+  const userId = auth().userUuid;
+  const [currentTeam, setCurrentTeam] = useState([]);
+  const [teamMember, setTeamMember] = useState([]);
+  const [teamTasks, setTeamTasks] = useState([]);
+
+  const fetchMyTeam = async () => {
     try {
       const orgId = "71152531-e247-467f-8839-b78c14d7f71e";
       const config = {
@@ -16,22 +24,81 @@ function TeamPage() {
         },
       };
       const response = await axios.get(
-        `http://localhost:3000/team/${orgId}/list`,
+        `http://localhost:3000/team/${userId}/me`,
         config
       );
-      setTeamData(response.data.teams);
+      fetchTeamMember(response.data.team);
+      fetchTeamTasks(response.data.team);
+      setCurrentTeam(response.data.team);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  
+  const fetchTeamMember = async (team) => {
+    try {
+      const teamId = team.team_id;
+      const config = {
+        headers: {
+          Authorization: `Bearer ${Cookies.get("_auth")}`,
+        },
+      };
+      const response = await axios.get(
+        `http://localhost:3000/team/${teamId}/member/list`,
+        config
+      );
+      console.log(response.data.teams)
+      setTeamMember(response.data.teams);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+
+  const fetchTeamTasks = async (team) => {
+    try {
+      const teamId = team.team_id;
+      const config = {
+        headers: {
+          Authorization: `Bearer ${Cookies.get("_auth")}`,
+        },
+      };
+      const response = await axios.get(
+        `http://localhost:3000/task/${teamId}/team`,
+        config
+      );
+      setTeamTasks(response.data);
     } catch (error) {
       console.error(error);
     }
   };
 
   useEffect(() => {
-    fetchTeamList();
+    fetchMyTeam();
   }, []);
 
-  const columns = [
+  const columnsMember = [
     {
-      name: "Team",
+      name: "Team Member Name",
+      selector: "name",
+      sortable: true,
+    },
+    {
+      name: "Task Done",
+      selector: "completed_tasks",
+      sortable: true,
+    },
+    {
+      name: "Contact Information",
+      selector: "email",
+      sortable: true,
+    }
+  ];
+
+  const columnsTeam = [
+    {
+      name: "Task",
       selector: "name",
       sortable: true,
     },
@@ -41,13 +108,18 @@ function TeamPage() {
       sortable: true,
     },
     {
-      name: "Manager",
-      selector: "manager_name",
+      name: "Assignee",
+      selector: "assignee_name",
       sortable: true,
     },
     {
-      name: "Team Member",
-      selector: "team_member_count",
+      name: "Due Date",
+      selector: "due_date",
+      sortable: true,
+    },
+    {
+      name: "Status",
+      selector: "status",
       sortable: true,
     },
   ];
@@ -55,37 +127,25 @@ function TeamPage() {
   const customStyles = {
     headCells: {
       style: {
+        border: "1px dotted black",
         fontSize: "14px",
         fontWeight: "bold",
       },
     },
+    cells: {
+      style: {
+        border: "1px dotted black",
+      },
+    },
   };
-
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    try {
-      await axios.post(`http://localhost:3000/team/${id}`, newTeam);
-      setNewTeam({
-        teamName: "",
-        description: "",
-      });
-      fetchTeamList();
-    } catch (error) {
-      console.error(error);
-    }
-    setShowForm(false);
-  };
-
   return (
     <div className="content-wrapper">
-      {/* Content Header (Page header) */}
       <div className="content-header">
         <div className="container-fluid">
           <div className="row mb-2">
             <div className="col-sm-6">
               <h1 className="m-0">Team</h1>
             </div>
-            {/* /.col */}
             <div className="col-sm-6">
               <ol className="breadcrumb float-sm-right">
                 <li className="breadcrumb-item">
@@ -104,77 +164,45 @@ function TeamPage() {
       {/* Main content */}
       <section className="content">
         <div className="container-fluid">
-          {/* Small boxes (Stat box) */}
-          <div className="row">
-            <div className="col-md-12">
-              <div className="card">
-                <div className="card-header">
-                  <div className="card-tools">
-                    {showForm ? (
-                      <button
-                        className="btn btn-secondary mr-2"
-                        onClick={() => setShowForm(false)}
-                      >
-                        Cancel
-                      </button>
-                    ) : (
-                      <div>
-                        <button
-                          className="btn btn-primary mr-2"
-                          onClick={() => setShowForm(true)}
-                        >
-                          + Add Team
-                        </button>
-                        <button
-                          className="btn btn-primary mr-2"
-                          onClick={() => setShowForm(true)}
-                        >
-                          + Add Team Member
-                        </button>
-                      </div>
-                    )}
+          <Tabs defaultActiveKey="personal" id="task-tabs">
+            <Tab eventKey="personal" title="Member">
+              <div className="row">
+                <div className="col-md-12">
+                  <div className="card">
+                    <div className="card-body">
+                      <DataTable
+                        columns={columnsMember}
+                        data={teamMember}
+                        noHeader
+                        pagination
+                        customStyles={customStyles}
+                      />
+                    </div>
                   </div>
                 </div>
-                <div className="card-body">
-                  {showForm ? (
-                    <form onSubmit={handleSubmit}>
-                      <div className="form-group">
-                        <label>Team Name:</label>
-                        <input
-                          type="text"
-                          className="form-control"
-                          name="name"
-                          value={newTeam.teamName}
+              </div>
+            </Tab>
+              <Tab eventKey="team" title="Team Task">
+                <div className="row">
+                  <div className="col-md-12">
+                    <div className="card">
+                      <div className="card-body">
+                        <DataTable
+                          columns={columnsTeam}
+                          data={teamTasks}
+                          noHeader
+                          pagination
+                          customStyles={customStyles}
                         />
                       </div>
-                      <div className="form-group">
-                        <label>Description:</label>
-                        <textarea
-                          name="description"
-                          className="form-control"
-                        ></textarea>
-                      </div>
-                      <button type="submit" className="btn btn-primary">
-                        Save
-                      </button>
-                    </form>
-                  ) : (
-                    <DataTable
-                      columns={columns}
-                      data={teamData}
-                      noHeader
-                      pagination
-                      customStyles={customStyles}
-                    />
-                  )}
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
-          </div>
+              </Tab>
+          </Tabs>
         </div>
       </section>
     </div>
   );
 }
-
-export default TeamPage;
+export default TaskPage;

@@ -40,8 +40,25 @@ function TaskPage() {
     };
     return date.toLocaleDateString("en-US", options);
   };
+  const fetchMyTeam = async () => {
+    try {
+      const orgId = "71152531-e247-467f-8839-b78c14d7f71e";
+      const config = {
+        headers: {
+          Authorization: `Bearer ${Cookies.get("_auth")}`,
+        },
+      };
+      const response = await axios.get(
+        `http://localhost:3000/team/${userId}/me`,
+        config
+      );
+      // setCurrentTasks(response.data.tasks);
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
-  const fetchAllTasks = async () => {
+  const fetchPersonalTasks = async () => {
     try {
       const config = {
         headers: {
@@ -92,13 +109,33 @@ function TaskPage() {
     }
   };
 
+  const fetchCompletedTasks = async () => {
+    // try {
+    //   const orgId = "71152531-e247-467f-8839-b78c14d7f71e";
+    //   const config = {
+    //     headers: {
+    //       Authorization: `Bearer ${Cookies.get("_auth")}`,
+    //     },
+    //   };
+    //   const response = await axios.get(
+    //     `http://localhost:3000/tasks/${orgId}/completed`,
+    //     config
+    //   );
+    //   // setCompletedTasks(response.data.tasks);
+    // } catch (error) {
+    //   console.error(error);
+    // }
+  };
+
   useEffect(() => {
-    fetchAllTasks();
+    fetchMyTeam();
+    fetchPersonalTasks();
+    // fetchCompletedTasks();
   }, []);
 
   const columnsPersonal = [
     {
-      name: "Task",
+      name: "Task Name",
       selector: "task_name",
       sortable: true,
     },
@@ -126,7 +163,7 @@ function TaskPage() {
       ),
     },
     {
-      name: "Start Date",
+      name: "Assign To",
       selector: "start_time",
       sortable: true,
       cell: (row) => (
@@ -221,28 +258,39 @@ function TaskPage() {
     },
   };
 
-  const handleSubmitTaskReview = async (event) => {
+  const handleSubmitPersonalTask = async (event) => {
     event.preventDefault();
-    // try {
-    //   const config = {
-    //     headers: {
-    //       Authorization: `Bearer ${Cookies.get("_auth")}`,
-    //       "content-type": "multipart/form-data",
-    //     },
-    //   };
-    //   const formData = new FormData();
-    //   formData.append("task_name", newTask);
-    //   formData.append("description", newTaskDescription);
-    //   formData.append("due_datetime", newTaskDueDateTime);
-    //   formData.append("priority", newTaskPriority);
-    //   formData.append("assign_to", userId);
-    //   formData.append("status", "Proposed");
-    //   formData.append("file", newTaskFile);
-    //   await axios.post("http://localhost:3000/task/personal", formData, config);
-    //   fetchPersonalTasks();
-    // } catch (error) {
-    //   console.error(error);
-    // }
+    try {
+      const config = {
+        headers: {
+          Authorization: `Bearer ${Cookies.get("_auth")}`,
+          "content-type": "multipart/form-data",
+        },
+      };
+      const formData = new FormData();
+      formData.append("task_name", newTask);
+      formData.append("description", newTaskDescription);
+      formData.append("due_datetime", newTaskDueDateTime);
+      formData.append("priority", newTaskPriority);
+      formData.append("assign_to", userId);
+      formData.append("status", "Proposed");
+      formData.append("file", newTaskFile);
+      await axios.post("http://localhost:3000/task/personal", formData, config);
+      fetchPersonalTasks();
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleSubmitTeamTask = async (event) => {
+    event.preventDefault();
+    try {
+      await axios.post(`http://localhost:3000/tasks/${userId}`);
+      fetchPersonalTasks();
+      fetchCompletedTasks();
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   const downloadFile = async (filename) => {
@@ -300,14 +348,14 @@ function TaskPage() {
         <div className="container-fluid">
           <div className="row mb-2">
             <div className="col-sm-6">
-              <h1 className="m-0">Task Management</h1>
+              <h1 className="m-0">Task</h1>
             </div>
             <div className="col-sm-6">
               <ol className="breadcrumb float-sm-right">
                 <li className="breadcrumb-item">
                   <a href="#">Home</a>
                 </li>
-                <li className="breadcrumb-item active">Task Management</li>
+                <li className="breadcrumb-item active">Task</li>
               </ol>
             </div>
             {/* /.col */}
@@ -382,6 +430,75 @@ function TaskPage() {
           </Tabs>
         </div>
       </section>
+      <Modal show={showAddTaskModal} onHide={() => setShowAddTaskModal(false)}>
+        <Modal.Header>
+          <Modal.Title>Add Personal Task</Modal.Title>
+          <Button variant="text" onClick={() => setShowAddTaskModal(false)}>
+            X
+          </Button>
+        </Modal.Header>
+        <Modal.Body>
+          <Form onSubmit={handleSubmitPersonalTask}>
+            <Form.Group>
+              <Form.Label>Task</Form.Label>
+              <Form.Control
+                type="text"
+                placeholder="Enter task"
+                value={newTask}
+                onChange={handleNewTaskChange}
+              />
+            </Form.Group>
+            <Form.Group>
+              <Form.Label>Description</Form.Label>
+              <Form.Control
+                as="textarea"
+                placeholder="Enter task description"
+                value={newTaskDescription}
+                onChange={handleNewTaskDescriptionChange}
+              />
+            </Form.Group>
+            <Form.Group>
+              <Form.Label>Due Date and Time</Form.Label>
+              <Form.Control
+                type="datetime-local"
+                value={newTaskDueDateTime}
+                onChange={handleNewTaskDueDateTimeChange}
+              />
+            </Form.Group>
+            <Form.Group>
+              <Form.Label>Priority</Form.Label>
+              <Form.Control
+                as="select"
+                value={newTaskPriority}
+                onChange={handleNewTaskPriorityChange}
+              >
+                <option value="Low">Low</option>
+                <option value="Medium">Medium</option>
+                <option value="High">High</option>
+              </Form.Control>
+            </Form.Group>
+            <Form.Group controlId="fileUpload">
+              <Form.Label>File Upload</Form.Label>
+              <Form.Control
+                type="file"
+                id="custom-file"
+                label="Choose file"
+                custom
+                multiple
+                onChange={handleNewFileUploadChange}
+                accept=".xlsx,.xls,.doc,.docx,.pdf,.zip,.rar,.ppt,.pptx"
+              />
+            </Form.Group>
+            <Button
+              style={{ marginTop: "10px" }}
+              variant="primary"
+              type="submit"
+            >
+              Submit
+            </Button>
+          </Form>
+        </Modal.Body>
+      </Modal>
       <Modal
         show={showDetailTaskModal}
         onHide={() => setShowDetailTaskModal(false)}
@@ -396,7 +513,7 @@ function TaskPage() {
           </Button>
         </Modal.Header>
         <Modal.Body>
-          <Form onSubmit={handleSubmitTaskReview}>
+          <Form onSubmit={handleSubmitTeamTask}>
             <div className="card-body">
               <h5>Task Detail</h5>
               <table style={{ padding: "10px" }}>
@@ -552,7 +669,7 @@ function TaskPage() {
           </Button>
         </Modal.Header>
         <Modal.Body>
-          <Form onSubmit={handleSubmitTaskReview}>
+          <Form onSubmit={handleSubmitTeamTask}>
             <Form.Group>
               <Form.Label>Task</Form.Label>
               <Form.Control

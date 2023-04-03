@@ -1,86 +1,417 @@
 import React, { useState, useEffect } from "react";
+import DataTable from "react-data-table-component";
 import axios from "axios";
-import { useSignIn } from "react-auth-kit";
-import { useNavigate } from "react-router-dom";
+import Cookies from "js-cookie";
+import { Modal, Button, Form } from "react-bootstrap";
+import { useAuthUser } from "react-auth-kit";
+import Select from "react-select";
+import "./style.css";
 
 function RubricPage() {
-  const [showModal, setShowModal] = useState(false);
-  const [rubricList, setRubricList] = useState([]);
-  const [formData, setFormData] = useState({
-    name: "",
-    description: "",
-    weight: "",
-    target: "",
-    minimum: "",
-    maximum: "",
-    metric: "",
-  });
+  const auth = useAuthUser();
+  const userId = auth().userUuid;
+  const [teamData, setTeamData] = useState([]);
+  const [rubricData, setRubricData] = useState([]);
+  const [showAddRubricModal, setShowAddRubricModal] = useState(false);
+  const [showDetailRubricModal, setShowDetailRubricModal] = useState(false);
+  const [newAssessmentCategory, setnewAssessmentCategory] = useState("");
+  const [newAssessmentMetric, setnewAssessmentMetric] = useState("");
+  const [newAssessmentDescription, setnewAssessmentDescription] = useState("");
+  const [newAssessmentCriteria, setnewAssessmentCriteria] = useState("");
+  const [newAssessmentWeight, setnewAssessmentWeight] = useState("");
+  const [newAssessmentScoreSystem, setnewAssessmentScoreSystem] = useState("");
+  const [newAssessmentDataSource, setnewAssessmentDataSource] = useState("");
+  const [selectedTeam, setSelectedTeam] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
-  const handleChange = (event) => {
-    setFormData({
-      ...formData,
-      [event.target.name]: event.target.value,
-    });
-  };
-
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-
+  const fetchTeamRubric = async () => {
     try {
-      await axios.post("http://localhost:3000/rubric", formData);
-      setFormData({
-        name: "",
-        description: "",
-        weight: "",
-        target: "",
-        minimum: "",
-        maximum: "",
-        metric: "",
-      });
-      setShowModal(false);
-      fetchRubricList();
+      const orgId = "71152531-e247-467f-8839-b78c14d7f71e";
+      const config = {
+        headers: {
+          Authorization: `Bearer ${Cookies.get("_auth")}`,
+        },
+      };
+      const response = await axios.get(
+        `http://localhost:3000/team/${orgId}/${userId}/rubric`,
+        config
+      );
+      setTeamData(response.data.teams);
     } catch (error) {
       console.error(error);
     }
   };
-
-  const navigate = useNavigate();
-  //   const signIn = useSignIn();
-
-  const handleModalOpen = () => {
-    setShowModal(true);
-  };
-
-  const handleModalClose = () => {
-    setShowModal(false);
-  };
-
-  const fetchRubricList = async () => {
+  const fetchTeamRubricList = async (team_uuid) => {
     try {
-      const response = await axios.get("http://localhost:3000/rubric");
-      setRubricList(response.data);
+      const orgId = "71152531-e247-467f-8839-b78c14d7f71e";
+      const config = {
+        headers: {
+          Authorization: `Bearer ${Cookies.get("_auth")}`,
+        },
+      };
+      const response = await axios.get(
+        `http://localhost:3000/rubric/${orgId}/${team_uuid}/list`,
+        config
+      );
+      console.log(response.data?.competencyRubrics);
+      setRubricData(response.data);
     } catch (error) {
       console.error(error);
     }
   };
 
   useEffect(() => {
-    fetchRubricList();
-    console.log(rubricList);
+    fetchTeamRubric();
   }, []);
 
-  //   const handleEditRubric = (rubricId) => {
-  //     navigate(`/rubrics/${rubricId}/edit`);
-  //   };
+  const columns = [
+    {
+      name: "Team",
+      selector: "team_name",
+      sortable: true,
+    },
+    {
+      name: "Team Member",
+      selector: "team_member_count",
+      sortable: true,
+      cell: (row) => (
+        <>
+          <div>{`${row.team_member_count} Member`}</div>
+        </>
+      ),
+    },
+    {
+      name: "Assessment Rubric",
+      selector: "assessment_rubric_amount",
+      sortable: true,
+      cell: (row) => (
+        <>
+          <div>{`${row.assessment_rubric_amount} Rubric/ ${row.assessment_rubric_amount_approved_except_not_approve} Approved`}</div>
+        </>
+      ),
+    },
+    {
+      name: "HRD Review Status",
+      selector: "assessment_rubric_status",
+      sortable: true,
+    },
+    {
+      name: "Action",
+      cell: (row) => (
+        <>
+          {/* <Button
+            variant="primary"
+            size="sm"
+            onClick={() => handleProfileClick(row)}
+          >
+            Detail
+          </Button> */}
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={() => handleDetailRubricClick(row)}
+          >
+            Detail
+          </Button>
+          <Button
+            variant="primary"
+            size="sm"
+            style={{ marginLeft: 10 }}
+            onClick={() => handleAddNewRubricClick(row)}
+          >
+            Add Rubric
+          </Button>
+        </>
+      ),
+      button: true,
+      width: "200px",
+      style: {
+        width: "20%",
+        minWidth: "200px",
+        textAlign: "center",
+      },
+    },
+  ];
 
-  const handleDeleteRubric = async (rubricId) => {
+  const columnsRubric = [
+    {
+      name: "Rubric Category",
+      selector: "category",
+      sortable: true,
+      width: "150px",
+      style: {
+        width: "10%",
+        minWidth: "150px",
+        textAlign: "center",
+      },
+    },
+    {
+      name: "Performance Metric",
+      selector: "performance_metric",
+      sortable: true,
+      cell: (row) => <div>{row.performance_metric}</div>,
+      width: "200px",
+      style: {
+        width: "10%",
+        minWidth: "200px",
+        textAlign: "center",
+      },
+    },
+    {
+      name: "Description",
+      selector: "description",
+      sortable: true,
+      cell: (row) => <div>{row.description}</div>,
+      width: "150px",
+      style: {
+        width: "10%",
+        minWidth: "150px",
+        textAlign: "left",
+      },
+    },
+    {
+      name: "Weight",
+      selector: "weight",
+      sortable: true,
+      width: "100px",
+      style: {
+        width: "10%",
+        minWidth: "100px",
+        textAlign: "center",
+      },
+    },
+    {
+      name: "Criteria",
+      selector: "criteria",
+      sortable: true,
+      width: "150px",
+      cell: (row) => <div>{row.criteria}</div>,
+      style: {
+        width: "10%",
+        minWidth: "150px",
+        textAlign: "left",
+      },
+    },
+    {
+      name: "Scoring System",
+      selector: "score_system",
+      sortable: true,
+      width: "150px",
+      cell: (row) => (
+        <div>
+          {row.score_system === "manual" ? "Score 5-to-1" : row.score_system}
+        </div>
+      ),
+      style: {
+        width: "10%",
+        minWidth: "150px",
+        textAlign: "center",
+      },
+    },
+    {
+      name: "HRD Approval Status",
+      selector: "status_approval",
+      sortable: true,
+      cell: (row) => <div>{row.status_approval?.toUpperCase()}</div>,
+      width: "150px",
+      style: {
+        width: "10%",
+        minWidth: "150px",
+        textAlign: "center",
+      },
+    },
+    {
+      name: "HRD Approval Status",
+      selector: "feedback_and_improvement",
+      sortable: true,
+      cell: (row) => <div>{row.feedback_and_improvement}</div>,
+      width: "150px",
+      style: {
+        width: "10%",
+        minWidth: "150px",
+        textAlign: "center",
+      },
+    },
+    {
+      name: "Action",
+      cell: (row) => (
+        <>
+          <div>
+            {row.status_approval === "revision" ? (
+              <Button
+                variant="warning"
+                size="sm"
+                onClick={() => handleDetailRubricClick(row)}
+              >
+                Edit
+              </Button>
+            ) : (
+              ""
+            )}
+            <Button
+              variant="danger"
+              size="sm"
+              style={{ marginLeft: "10px" }}
+              onClick={() => handleDetailRubricClick(row)}
+            >
+              Delete
+            </Button>
+          </div>
+        </>
+      ),
+      button: true,
+      width: "200px",
+      style: {
+        width: "20%",
+        minWidth: "200px",
+        textAlign: "center",
+      },
+    },
+  ];
+
+  const assessmentOption = [
+    { value: "KPI", label: "KPI" },
+    { value: "Competencies", label: "Competencies" },
+  ];
+
+  const scoreOption = [
+    { value: "manual", label: "Manual 1-5 Score" },
+    { value: "task", label: "Based On Task" },
+    { value: "self", label: "Self Assessment" },
+  ];
+
+  const trackingOption = [
+    { value: "KPI", label: "Manual" },
+    { value: "attendance", label: "Attendance" },
+    { value: "task_completion_rate", label: "Task Completion Rate" },
+    { value: "task_score", label: "Task Score" },
+  ];
+
+  const customStyles = {
+    headCells: {
+      style: {
+        border: "1px dotted black",
+        fontSize: "14px",
+        fontWeight: "bold",
+      },
+    },
+    cells: {
+      style: {
+        border: "1px dotted black",
+      },
+    },
+  };
+
+  const customStylesRubric = {
+    headCells: {
+      style: {
+        border: "1px dotted black",
+        fontSize: "14px",
+        fontWeight: "bold",
+      },
+    },
+    cells: {
+      style: {
+        border: "1px dotted black",
+        overflowWrap: "break-word",
+      },
+    },
+  };
+
+  const handleSearchChange = (event) => {
+    setSearchQuery(event.target.value);
+  };
+
+  const handleDetailRubricClick = (row) => {
+    setSelectedTeam(row);
+    fetchTeamRubricList(row.team_uuid);
+    setShowDetailRubricModal(true);
+  };
+
+  const handleAddNewRubricClick = (row) => {
+    setSelectedTeam(row);
+    setShowAddRubricModal(true);
+  };
+
+  const handleAssessmentCategoryChange = (event) => {
+    setnewAssessmentCategory(event.target.value);
+  };
+
+  const handleAssessmentMetricChange = (event) => {
+    setnewAssessmentMetric(event.target.value);
+  };
+
+  const handleNewAssessmentDescriptionChange = (event) => {
+    setnewAssessmentDescription(event.target.value);
+  };
+
+  const handleNewAssessmentCriteriaChange = (event) => {
+    setnewAssessmentCriteria(event.target.value);
+  };
+
+  const handleNewAssessmentWeightChange = (event) => {
+    setnewAssessmentWeight(event.target.value);
+  };
+
+  const handleNewAssessmentScoreSystemChange = (event) => {
+    setnewAssessmentScoreSystem(event.target.value);
+  };
+
+  const handleNewAssessmentDataSourceChange = (event) => {
+    setnewAssessmentDataSource(event.target.value);
+  };
+
+  const handleSubmitAddRubric = async (event) => {
+    event.preventDefault();
+    console.log(selectedTeam.team_uuid);
     try {
-      await axios.delete(`http://localhost:3000/rubric/${rubricId}`);
-      setRubricList(rubricList.filter((rubric) => rubric.id !== rubricId));
+      const orgId = "71152531-e247-467f-8839-b78c14d7f71e";
+      const config = {
+        headers: {
+          Authorization: `Bearer ${Cookies.get("_auth")}`,
+        },
+      };
+      const response = await axios.post(
+        `http://localhost:3000/rubric/`,
+        {
+          category: newAssessmentCategory,
+          metric: newAssessmentMetric,
+          description: newAssessmentDescription,
+          criteria: newAssessmentCriteria,
+          weight: newAssessmentWeight,
+          score_system: newAssessmentScoreSystem,
+          data_source: newAssessmentDataSource,
+          team_id: selectedTeam.team_uuid,
+        },
+        config
+      );
+      fetchTeamRubric();
+      setShowAddRubricModal(false);
+      fetchTeamRubricList();
+      setnewAssessmentCategory("");
+      setnewAssessmentMetric("");
+      setnewAssessmentDescription("");
+      setnewAssessmentCriteria("");
+      setnewAssessmentWeight("");
+      setnewAssessmentScoreSystem("");
+      setnewAssessmentDataSource("");
     } catch (error) {
       console.error(error);
     }
   };
+
+  const filteredTeamData = teamData.filter(
+    (item) =>
+      item.team_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.team_member_count.toString().includes(searchQuery) ||
+      item.assessment_rubric_amount.toString().includes(searchQuery) ||
+      item.assessment_rubric_amount_approved_except_not_approve
+        .toString()
+        .includes(searchQuery) ||
+      item.assessment_rubric_status
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase())
+  );
 
   return (
     <div className="content-wrapper">
@@ -114,206 +445,178 @@ function RubricPage() {
             <div className="col-md-12">
               <div className="card">
                 <div className="card-header">
-                  <h3 className="card-title"></h3>
-                  <div className="card-tools">
-                    <button
-                      type="button"
-                      className="btn btn-primary"
-                      onClick={handleModalOpen}
-                    >
-                      + Add Assessment Rubric
-                    </button>
+                  <div className="card-tools" style={{ width: "210px" }}>
+                    <div>
+                      <Form.Control
+                        type="text"
+                        placeholder="Search rubric or team name"
+                        value={searchQuery}
+                        onChange={handleSearchChange}
+                      />
+                    </div>
                   </div>
                 </div>
-                {/* /.card-header */}
                 <div className="card-body">
-                  <table className="table table-bordered table-hover">
-                    <thead>
-                      <tr>
-                        <th>Name</th>
-                        <th>Description</th>
-                        <th>Weight</th>
-                        <th>Target</th>
-                        <th>Minimum</th>
-                        <th>Maximum</th>
-                        <th>Metric</th>
-                        <th>Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {rubricList.map((rubric) => (
-                        <tr key={rubric.id}>
-                          <td>{rubric.name}</td>
-                          <td>{rubric.description}</td>
-                          <td>{rubric.weight.toLocaleString()}</td>
-                          <td>{rubric.target.toLocaleString()}</td>
-                          <td>{rubric.minimum.toLocaleString()}</td>
-                          <td>{rubric.maximum.toLocaleString()}</td>
-                          <td>{rubric.metric}</td>
-                          <td>
-                            {/* Edit Button */}
-                            {/* <button
-          type="button"
-          className="btn btn-primary btn-sm mr-2"
-          onClick={() => handleEditRubric(rubric.id)}
-        >
-          <i className="fas fa-edit"></i>
-        </button> */}
-                            {/* Delete Button */}
-                            <button
-                              type="button"
-                              className="btn btn-danger btn-sm"
-                              onClick={() => handleDeleteRubric(rubric.id)}
-                            >
-                              <i className="fas fa-trash"></i>
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                  <DataTable
+                    columns={columns}
+                    data={filteredTeamData}
+                    noHeader
+                    pagination
+                    customStyles={customStyles}
+                  />
                 </div>
-                {/* /.card-body */}
               </div>
-              {/* /.card */}
             </div>
-            {/* /.col */}
           </div>
-          {/* /.row (main row) */}
         </div>
-        {/* /.container-fluid */}
       </section>
-      {/* /.content */}
-
-      {/* Assessment Rubric Modal */}
-      <div
-        className={`modal fade ${showModal ? "show" : ""}`}
-        style={{ display: showModal ? "block" : "none" }}
+      <Modal
+        show={showAddRubricModal}
+        onHide={() => setShowAddRubricModal(false)}
       >
-        <div className="modal-dialog modal-lg">
-          <div className="modal-content">
-            <div className="modal-header">
-              <h4 className="modal-title">Add Assessment Rubric</h4>
-              <button
-                type="button"
-                className="close"
-                onClick={handleModalClose}
-              >
-                &times;
-              </button>
-            </div>
-            <div
-              className="modal-body"
-              style={{ height: "400px", overflowY: "auto" }}
+        <Modal.Header>
+          <Modal.Title>
+            Add Assessment Rubric to{" "}
+            {selectedTeam?.team_name && <span>{selectedTeam.team_name}</span>}
+          </Modal.Title>
+          <Button variant="text" onClick={() => setShowAddRubricModal(false)}>
+            X
+          </Button>
+        </Modal.Header>
+        <Modal.Body>
+          <Form onSubmit={handleSubmitAddRubric}>
+            <Form.Group>
+              <Form.Label>Assessment Category</Form.Label>
+              <Select
+                onChange={(event) => setnewAssessmentCategory(event.value)}
+                options={assessmentOption}
+              />
+            </Form.Group>
+            <Form.Group>
+              <Form.Label>Metric</Form.Label>
+              <Form.Control
+                type="text"
+                placeholder="Enter assessment metric"
+                value={newAssessmentMetric}
+                onChange={handleAssessmentMetricChange}
+              />
+            </Form.Group>
+            <Form.Group>
+              <Form.Label>Description</Form.Label>
+              <Form.Control
+                as="textarea"
+                value={newAssessmentDescription}
+                onChange={handleNewAssessmentDescriptionChange}
+              />
+            </Form.Group>
+            <Form.Group>
+              <Form.Label>Criteria</Form.Label>
+              <Form.Control
+                as="textarea"
+                value={newAssessmentCriteria}
+                onChange={handleNewAssessmentCriteriaChange}
+              />
+            </Form.Group>
+            <Form.Group>
+              <Form.Label>Weight</Form.Label>
+              <Form.Control
+                type="number"
+                value={newAssessmentWeight}
+                onChange={handleNewAssessmentWeightChange}
+              />
+            </Form.Group>
+            <Form.Group>
+              <Form.Label>Score System</Form.Label>
+              <Select
+                onChange={(event) => setnewAssessmentScoreSystem(event.value)}
+                options={scoreOption}
+              />
+            </Form.Group>
+            {newAssessmentScoreSystem === "task" ? (
+              <Form.Group>
+                <Form.Label>Tracking Source</Form.Label>
+                <Select
+                  onChange={(event) => setnewAssessmentDataSource(event.value)}
+                  options={trackingOption}
+                />
+              </Form.Group>
+            ) : null}
+            <Button
+              style={{ marginTop: "10px" }}
+              variant="primary"
+              type="submit"
             >
-              {/* Add Assessment Rubric Form Here */}
-              <form onSubmit={handleSubmit}>
-                <div className="form-group">
-                  <label htmlFor="name">Name:</label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    id="name"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="description">Description:</label>
-                  <textarea
-                    className="form-control"
-                    id="description"
-                    name="description"
-                    value={formData.description}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="weight">Weight:</label>
-                  <input
-                    type="number"
-                    className="form-control"
-                    id="weight"
-                    name="weight"
-                    value={formData.weight}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="target">Target:</label>
-                  <input
-                    type="number"
-                    className="form-control"
-                    id="target"
-                    name="target"
-                    value={formData.target}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="minimum">Minimum:</label>
-                  <input
-                    type="number"
-                    className="form-control"
-                    id="minimum"
-                    name="minimum"
-                    value={formData.minimum}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="maximum">Maximum:</label>
-                  <input
-                    type="number"
-                    className="form-control"
-                    id="maximum"
-                    name="maximum"
-                    value={formData.maximum}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="metric">Metric:</label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    id="metric"
-                    name="metric"
-                    value={formData.metric}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-                <button type="submit" className="btn btn-primary">
-                  Add
-                </button>
-              </form>
-            </div>
-            <div className="modal-footer">
-              <button
-                type="button"
-                className="btn btn-secondary"
-                onClick={handleModalClose}
-              >
-                Close
-              </button>
-              <button type="button" className="btn btn-primary">
-                Save changes
-              </button>
-            </div>
-          </div>
-          {/* /.modal-content */}
-        </div>
-        {/* /.modal-dialog */}
-      </div>
-      {/* /.modal */}
+              Submit
+            </Button>
+          </Form>
+        </Modal.Body>
+      </Modal>
+      <Modal
+        size="xl"
+        show={showDetailRubricModal}
+        onHide={() => setShowDetailRubricModal(false)}
+      >
+        <Modal.Header>
+          <Modal.Title>
+            Assessment Rubric for{" "}
+            {selectedTeam?.team_name && <span>{selectedTeam.team_name}</span>}
+          </Modal.Title>
+          <Button
+            variant="text"
+            onClick={() => setShowDetailRubricModal(false)}
+          >
+            X
+          </Button>
+        </Modal.Header>
+        {/* <table className="table">
+          <thead>
+            <tr>
+              <th style={{ verticalAlign: "middle" }}>Rubric Category</th>
+              <th style={{ verticalAlign: "middle" }}>Performance Metric</th>
+              <th style={{ verticalAlign: "middle" }}>Description</th>
+              <th style={{ verticalAlign: "middle" }}>Weight</th>
+              <th style={{ verticalAlign: "middle" }}>Criteria</th>
+              <th style={{ verticalAlign: "middle" }}>Scoring System</th>
+              <th style={{ verticalAlign: "middle" }}>Tracking Source</th>
+              <th style={{ verticalAlign: "middle" }}>HRD Approval Status</th>
+              <th style={{ verticalAlign: "middle" }}>HRD Comment</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {rubricData.map((row, index) => (
+              <tr key={index}>
+                <td style={{ marginLeft: "15px" }}>{row.category}</td>
+                <td style={{ marginLeft: "15px" }}>{row.performance_metric}</td>
+                <td style={{ marginLeft: "15px" }}>{row.description}</td>
+                <td style={{ marginLeft: "15px" }}>{row.weight}</td>
+                <td style={{ marginLeft: "15px" }}>{row.criteria}</td>
+                <td style={{ marginLeft: "15px" }}>
+                  {row.score_system === "manual" ? "5-point scale" : ""}
+                </td>
+                <td style={{ marginLeft: "15px" }}>
+                  {row.data_source ? row.data_source : "Evaluation"}
+                </td>
+                <td style={{ marginLeft: "15px" }}>
+                  {row.status_approval?.toUpperCase()}
+                </td>
+                <td style={{ marginLeft: "15px" }}>
+                  {row.feedback_and_improvement}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table> */}
+        <Modal.Body>
+          <DataTable
+            columns={columnsRubric}
+            data={rubricData}
+            noHeader
+            pagination
+            customStyles={customStylesRubric}
+          />
+        </Modal.Body>
+      </Modal>
     </div>
   );
 }

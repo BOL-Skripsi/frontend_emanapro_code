@@ -21,7 +21,7 @@ function Login({ onLogin }) {
         token: response.data.token,
         expiresIn: 3600,
         tokenType: "Bearer",
-        authState: { userId: response.data.user.id }
+        authState: { userId: response.data.user.id, userUuid:response.data.user.uuid  }
       });
       navigate("/");
     } catch (error) {

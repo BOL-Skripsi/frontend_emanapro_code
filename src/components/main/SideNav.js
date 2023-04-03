@@ -6,7 +6,7 @@ import Cookies from "js-cookie";
 
 const SideNav = () => {
   const auth = useAuthUser();
-  const userId = auth().userId;
+  const userId = auth().userUuid;
   const [selectedOrg, setSelectedOrg] = useState("");
   const [roles, setRoles] = useState([]);
   const [activeLink, setActiveLink] = useState("");
@@ -40,7 +40,7 @@ const SideNav = () => {
         { path: "/", name: "Dashboard", icon: "fas fa-tachometer-alt" },
         { path: "/rubric", name: "Assessment Rubric", icon: "fas fa-file-alt" },
         { path: "/kpi", name: "KPI", icon: "fas fa-chart-line" },
-        { path: "/team", name: "Team", icon: "fas fa-users" },
+        { path: "/team_management", name: "Team Management", icon: "fas fa-users" },
         { path: "/task", name: "Task", icon: "fas fa-check-double" },
         {
           path: "/task-checking",
@@ -52,20 +52,24 @@ const SideNav = () => {
       manager: [
         { path: "/", name: "Dashboard", icon: "fas fa-tachometer-alt" },
         { path: "/rubric", name: "Assessment Rubric", icon: "fas fa-file-alt" },
-        { path: "/kpi", name: "KPI", icon: "fas fa-chart-line" },
-        { path: "/team", name: "Team", icon: "fas fa-users" },
-        { path: "/task", name: "Task", icon: "fas fa-check-double" },
+        { path: "/kpi_assessment", name: "KPI Assessment", icon: "fas fa-chart-line" },
+        { path: "/team_management", name: "Team Management", icon: "fas fa-users" },
+        {
+          path: "/task_management",
+          name: "Task Management",
+          icon: "fas fa-tasks",
+        },
       ],
       hrd: [
         { path: "/", name: "Dashboard", icon: "fas fa-tachometer-alt" },
-        { path: "/rubric", name: "Assessment Rubric", icon: "fas fa-file-alt" },
-        { path: "/kpi", name: "KPI", icon: "fas fa-chart-line" },
-        {
-          path: "/task-checking",
-          name: "Task Checking",
-          icon: "fas fa-tasks",
-        },
         { path: "/employee", name: "Employee", icon: "fas fa-user-tie" },
+        { path: "/rubric_review", name: "Rubric Review", icon: "fas fa-file-alt" },
+        { path: "/kpi_review", name: "KPI Review", icon: "fas fa-chart-line" },
+        // {
+        //   path: "/task-checking",
+        //   name: "Task Checking",
+        //   icon: "fas fa-tasks",
+        // },
       ],
       employee: [
         { path: "/", name: "Dashboard", icon: "fas fa-tachometer-alt" },
@@ -74,7 +78,6 @@ const SideNav = () => {
         { path: "/team", name: "Team", icon: "fas fa-users" },
       ],
     };
-    console.log(roles);
     const userRole = roles?.organization_role; // get the first role of the user
     if (!userRole) return []; // if no role, return empty array
 
@@ -89,7 +92,7 @@ const SideNav = () => {
       <aside className="main-sidebar sidebar-dark-primary elevation-4">
         {/* Brand Logo */}
         <a href="index3.html" className="brand-link">
-          <span className="brand-text font-weight-light">E-Performance</span>
+          <span className="brand-text font-weight-heavy" style={{paddingLeft:'20px', fontWeight:'bold'}}>E-Performance</span>
         </a>
         {/* Sidebar */}
         <div className="sidebar">
