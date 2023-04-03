@@ -38,12 +38,12 @@ function RegisterPage() {
       <div className="register-box">
         <div className="register-logo">
           <a href="../../index2.html">
-            <b>Admin</b>LTE
+          <b>e-Manapro</b>
           </a>
         </div>
         <div className="card">
           <div className="card-body register-card-body">
-            <p className="login-box-msg">Register a new membership</p>
+            <p className="login-box-msg">Register a new user</p>
             <form onSubmit={handleRegister}>
               <div className="input-group mb-3">
                 <input

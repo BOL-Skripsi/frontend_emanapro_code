@@ -40,7 +40,7 @@ function Login({ onLogin }) {
       <div className="login-box">
         <div className="login-logo">
           <a href="../../index2.html">
-            <b>Admin</b>LTE
+          <b>e-Manapro</b>
           </a>
         </div>
         {/* /.login-logo */}
