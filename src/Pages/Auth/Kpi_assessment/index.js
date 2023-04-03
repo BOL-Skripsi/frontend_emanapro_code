@@ -9,12 +9,15 @@ import DataTable from "react-data-table-component";
 function EmployeePage() {
   const [kpiData, setKpiData] = useState([]);
   const [kpiTeamData, setKpiTeamData] = useState([]);
+  const [kpiTeamMemberData, setKpiTeamMemberData] = useState([]);
   const [newPeriod, setNewPeriod] = useState("");
   const [showMemberKpiModal, setShowMemberKpiModal] = useState(false);
   const [showDetailKpiModal, setShowDetailKpiModal] = useState(false);
   const [showAddKpiModal, setShowAddKpiModal] = useState(false);
+  const full = true;
   const [selectedRubric, setSelectedRubric] = useState(null);
 
+  let i = 1;
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     const options = {
@@ -36,7 +39,10 @@ function EmployeePage() {
           Authorization: `Bearer ${Cookies.get("_auth")}`,
         },
       };
-      const response = await axios.get(`http://localhost:3000/kpi/open`, config);
+      const response = await axios.get(
+        `http://localhost:3000/kpi/open`,
+        config
+      );
       setKpiData(response.data);
     } catch (error) {
       console.error(error);
@@ -50,14 +56,17 @@ function EmployeePage() {
           Authorization: `Bearer ${Cookies.get("_auth")}`,
         },
       };
-      const response = await axios.get(`http://localhost:3000/kpi/open/${userId}/${duedateId}/list`, config);
+      const response = await axios.get(
+        `http://localhost:3000/kpi/open/${userId}/${duedateId}/list`,
+        config
+      );
       setKpiTeamData(response.data);
     } catch (error) {
       console.error(error);
     }
   };
 
-  const fetchKpiTeamMemberData = async (userId, duedateId) => {
+  const fetchKpiAssessmentForm = async (userId, duedateId, category) => {
     try {
       // const orgId = "71152531-e247-467f-8839-b78c14d7f71e";
       const config = {
@@ -65,8 +74,11 @@ function EmployeePage() {
           Authorization: `Bearer ${Cookies.get("_auth")}`,
         },
       };
-      const response = await axios.get(`http://localhost:3000/kpi/kpi_team_member/open/${userId}/${duedateId}/list`, config);
-      setKpiTeamData(response.data);
+      const response = await axios.get(
+        `http://localhost:3000/kpi/open/${userId}/${duedateId}/${category}/form`,
+        config
+      );
+      setKpiTeamMemberData(response.data);
     } catch (error) {
       console.error(error);
     }
@@ -77,8 +89,11 @@ function EmployeePage() {
   }, []);
 
   const handleMemberKpiClick = (row) => {
-    setSelectedRubric(row);
-    console.log(row);
+    fetchKpiAssessmentForm(
+      row.user_id,
+      row.assessment_due_date_uuid,
+      row.category
+    );
     setShowMemberKpiModal(true);
   };
 
@@ -218,6 +233,56 @@ function EmployeePage() {
     },
   ];
 
+  const columnsAssessment = [
+    {
+      name: "No.",
+      selector: "id",
+      sortable: true,
+      subHeader: <span rowSpan={2}>No.</span>,
+    },
+    {
+      name: "Key Responsibilities",
+      selector: "keyResponsibilities",
+      sortable: true,
+      subHeader: <span rowSpan={2}>Key Responsibilities</span>,
+    },
+    {
+      name: "Key Performance Indicator(KPI)",
+      selector: "kpi",
+      sortable: true,
+    },
+    {
+      name: "Weight %",
+      selector: "weight",
+      sortable: true,
+    },
+    {
+      name: "Tracking Source",
+      selector: "trackingSource",
+      sortable: true,
+    },
+    {
+      name: "Work Order",
+      selector: "workOrder",
+      sortable: true,
+    },
+    {
+      name: "Measurement",
+      selector: "measurement",
+      sortable: true,
+    },
+    {
+      name: "Assessment",
+      selector: "assessment",
+      sortable: true,
+    },
+    {
+      name: "Score",
+      selector: "score",
+      sortable: true,
+    },
+  ];
+
   const customStyles = {
     headCells: {
       style: {
@@ -301,22 +366,70 @@ function EmployeePage() {
 
       <Modal
         size="xl"
+        fullscreen={full}
         show={showMemberKpiModal}
         onHide={() => setShowMemberKpiModal(false)}
       >
         <Modal.Header>
-          <Modal.Title>{" "}
+          <Modal.Title>
+            {" "}
             {selectedRubric?.name && (
               <span>{selectedRubric.name} Assessment Progress</span>
-            )}</Modal.Title>
+            )}
+          </Modal.Title>
           <Button variant="text" onClick={() => setShowMemberKpiModal(false)}>
             X
           </Button>
         </Modal.Header>
         <Modal.Body>
-          <p>
-            asdjalksdjlakjsdlakjsdlakjsdlkajsdlkajsdlkajsdlkajsdlkajsdlkajsdlkajsdlkajsdlkajsdlkjakdsjlakjsdlakjsdlk
-          </p>
+          <table border={"1"} cellPadding={"5"} width={"100%"}>
+            <thead>
+              <tr>
+                <th rowSpan={"2"} style={{ textAlign: "center" }}>
+                  No.
+                </th>
+                <th rowSpan={"2"} style={{ textAlign: "center" }}>
+                  Key Responsibilities
+                </th>
+                <th colSpan={"2"} style={{ textAlign: "center" }}>
+                  Key Performance Indicator(KPI)
+                </th>
+                <th rowSpan={"2"} style={{ textAlign: "center" }}>
+                  Weight %
+                </th>
+                <th rowSpan={"2"} style={{ textAlign: "center" }}>
+                  Tracking Source
+                </th>
+                <th colSpan={"2"} style={{ textAlign: "center" }}>
+                  Assessment
+                </th>
+              </tr>
+              <tr>
+                <th style={{ textAlign: "center" }}>Work Order</th>
+                <th style={{ textAlign: "center" }} width={"300px"}>
+                  Measurement
+                </th>
+                <th style={{ textAlign: "center" }}>
+                  A Brief Description of Work Results
+                </th>
+                <th style={{ textAlign: "center" }}>Score</th>
+              </tr>
+            </thead>
+            <tbody>
+              {kpiTeamMemberData.map((data) => (
+                <tr>
+                  <td style={{ textAlign: "center" }}>{i++}</td>
+                  <td>{data.performance_metric}</td>
+                  <td>{data.description}</td>
+                  <td>{data.criteria}</td>
+                  <td>{data.weight}</td>
+                  <td>{data.data_source}</td>
+                  <td>{data.uraian_kinerja}</td>
+                  <td>{data.score ? data.score : "Test nilai"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </Modal.Body>
       </Modal>
     </div>
