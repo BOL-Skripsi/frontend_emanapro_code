@@ -21,7 +21,10 @@ function Login({ onLogin }) {
         token: response.data.token,
         expiresIn: 3600,
         tokenType: "Bearer",
-        authState: { userId: response.data.user.id, userUuid:response.data.user.uuid  }
+        authState: {
+          userId: response.data.user.id,
+          userUuid: response.data.user.uuid,
+        },
       });
       navigate("/");
     } catch (error) {
@@ -29,18 +32,21 @@ function Login({ onLogin }) {
     }
   };
   function handleRegister() {
-    navigate('/register');
+    navigate("/register");
   }
   function handleForgot() {
-    navigate('/forgot');
+    navigate("/forgot");
   }
 
   return (
-    <div className="d-flex justify-content-center align-items-center h-100">
+    <div
+      className="d-flex justify-content-center align-items-center h-100"
+      style={{ display: "flex", justifyContent: "center" }}
+    >
       <div className="login-box">
         <div className="login-logo">
           <a href="../../index2.html">
-          <b>e-Manapro</b>
+            <b>e-Manapro</b>
           </a>
         </div>
         {/* /.login-logo */}
@@ -94,7 +100,9 @@ function Login({ onLogin }) {
             </form>
             {/* /.social-auth-links */}
             <p className="mb-1">
-              <a href="#"  onClick={handleForgot}>Forgot my password</a>
+              <a href="#" onClick={handleForgot}>
+                Forgot my password
+              </a>
             </p>
             <p className="mb-0">
               <a href="#" onClick={handleRegister} className="text-center">
