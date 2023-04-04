@@ -209,6 +209,11 @@ function TaskPage() {
       name: "Status",
       selector: "status",
       sortable: true,
+      cell: (row) => (
+        <>
+          <div>{row.status?.toUpperCase()}</div>
+        </>
+      ),
     },
     {
       name: "Action",
@@ -292,7 +297,7 @@ function TaskPage() {
       formData.append("due_datetime", newTaskDueDateTime);
       formData.append("priority", newTaskPriority);
       formData.append("assign_to", newTaskAssign);
-      formData.append("status", "Approve");
+      formData.append("status", "approve");
       formData.append("file", newTaskFile);
       console.log(formData);
       await axios.post("http://localhost:3000/task/personal", formData, config);
@@ -319,10 +324,13 @@ function TaskPage() {
   const handleSubmitApproval = async (event) => {
     event.preventDefault();
     try {
-      await axios.put(`http://localhost:3000/task/${selectedTask.uuid}/approval`, {
-        comment: newComment,
-        status: newStatus,
-      });
+      await axios.put(
+        `http://localhost:3000/task/${selectedTask.uuid}/approval`,
+        {
+          comment: newComment,
+          status: newStatus,
+        }
+      );
       fetchMyJuridictionPersonalTasks();
     } catch (error) {
       console.error(error);
@@ -334,6 +342,16 @@ function TaskPage() {
     try {
       await axios.post(`http://localhost:3000/tasks/${userId}`);
       fetchMyJuridictionPersonalTasks();
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleManagerReply = async (event) => {
+    event.preventDefault();
+    try {
+      // await axios.post(`http://localhost:3000/tasks/${userId}`);
+      // fetchMyJuridictionPersonalTasks();
     } catch (error) {
       console.error(error);
     }
@@ -654,119 +672,147 @@ function TaskPage() {
                     <strong>Status</strong>
                   </td>
                   <td style={{ verticalAlign: "top" }}>:</td>
-                  <td style={{ paddingLeft: "5px" }}>{detailTasks.status}</td>
+                  <td style={{ paddingLeft: "5px" }}>
+                    {detailTasks.status?.toUpperCase()}
+                  </td>
                 </tr>
               </tbody>
             </table>
           </div>
-          {detailTasks.status === "Approve" ? (
+          {detailTasks.status === "approve" ? (
             <div className="card-body">
               <h5>Task Reply</h5>
+              <Form onSubmit={handleManagerReply}>
+                <table style={{ padding: "10px" }}>
+                  <tbody>
+                    {taskReply.length > 0 ? (
+                      taskReply.map((data) => (
+                        <>
+                          <tr>
+                            <td
+                              style={{
+                                verticalAlign: "top",
+                                width: "20%",
+                                paddingLeft: "5px",
+                                border: "1px solid black",
+                              }}
+                            >
+                              <strong>{selectedTask?.user_name}</strong>
+                            </td>
+                            <td
+                              style={{
+                                verticalAlign: "top",
+                                border: "1px solid black",
+                              }}
+                              width="1%"
+                            >
+                              :
+                            </td>
+                            <td
+                              style={{
+                                paddingLeft: "5px",
+                                width: "80%",
+                                border: "1px solid black",
+                              }}
+                              colSpan={"3"}
+                            >
+                              {data.reply_comment}
+                            </td>
+                          </tr>
+                          <tr>
+                            <td colSpan={"3"}>
+                              <a
+                                onClick={() => downloadFile(data.file_name)}
+                                style={{
+                                  color: "blue",
+                                  cursor: "pointer",
+                                  transition: "filter 0.2s ease",
+                                }}
+                              >
+                                {data.file_name}
+                              </a>
+                            </td>
+                          </tr>
+                        </>
+                      ))
+                    ) : (
+                      <tr>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                      </tr>
+                    )}
 
-              <table style={{ padding: "10px" }}>
-                <tbody>
-                  {taskReply.map((data) => (
-                    <>
-                      <tr>
-                        <td
-                          style={{
-                            verticalAlign: "top",
-                            width: "20%",
-                            paddingLeft: "5px",
-                          }}
-                        >
-                          <strong>{selectedTask?.user_name}</strong>
-                        </td>
-                        <td style={{ verticalAlign: "top" }}>:</td>
-                        <td style={{ paddingLeft: "5px", width: "80%" }}>
-                          {data.reply_comment}
-                        </td>
-                      </tr>
-                      <tr>
-                        <td></td>
-                        <td></td>
-                        <td>
-                          <a
-                            onClick={() => downloadFile(data.file_name)}
-                            style={{
-                              color: "blue",
-                              cursor: "pointer",
-                              transition: "filter 0.2s ease",
-                            }}
-                          >
-                            {data.file_name}
-                          </a>
-                        </td>
-                      </tr>
-                    </>
-                  ))}
-                  <tr>
-                    <td style={{ paddingLeft: "5px", paddingTop: "30px" }}>
-                      <b>Comment</b>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td
-                      style={{ paddingLeft: "5px", width: "100%" }}
-                      colSpan={"3"}
-                    >
-                      <Form.Control
-                        as="textarea"
-                        placeholder="Enter task answer description"
-                        value={newTaskDescription}
-                        style={{ width: "100%" }}
-                        onChange={handleNewTaskDescriptionChange}
-                        disabled={detailTasks.status === "Proposed"}
-                      />
-                    </td>
-                  </tr>
-                  <tr>
-                    <td
-                      style={{ paddingLeft: "5px", width: "100%" }}
-                      colSpan={"3"}
-                    >
-                      <Form.Control
-                        type="file"
-                        id="custom-file"
-                        label="Choose file"
-                        custom
-                        multiple
-                        onChange={handleNewFileUploadChange}
-                        accept=".xlsx,.xls,.doc,.docx,.pdf,.zip,.rar,.ppt,.pptx"
-                        disabled={detailTasks.status === "Proposed"}
-                      />
-                    </td>
-                  </tr>
-                  <tr>
-                    <td style={{ paddingLeft: "5px", paddingTop: "5px" }}>
-                      <b>Status</b>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td
-                      style={{ paddingLeft: "5px", width: "100%" }}
-                      colSpan={"3"}
-                    >
-                      <Select
-                        onChange={(event) => handleNewStatusChange(event)}
-                        options={statusTaskOptions}
-                      />
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <Button
-                        style={{ marginLeft: "5px", marginTop: "10px" }}
-                        variant="primary"
-                        type="submit"
-                        disabled={detailTasks.status === "Proposed"}
+                    <tr>
+                      <td style={{ paddingLeft: "5px", paddingTop: "30px" }}>
+                        <b>Comment</b>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td
+                        style={{ paddingLeft: "5px", width: "100%" }}
+                        colSpan={"4"}
                       >
-                        Submit
-                      </Button>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+                        <Form.Control
+                          as="textarea"
+                          required
+                          placeholder="Enter task answer description"
+                          value={newTaskDescription}
+                          style={{ width: "100%" }}
+                          onChange={handleNewTaskDescriptionChange}
+                          disabled={detailTasks.status === "Proposed"}
+                        />
+                      </td>
+                    </tr>
+                    <tr>
+                      <td
+                        style={{ paddingLeft: "5px", width: "100%" }}
+                        colSpan={"3"}
+                      >
+                        <Form.Control
+                          type="file"
+                          id="custom-file"
+                          label="Choose file"
+                          custom
+                          multiple
+                          onChange={handleNewFileUploadChange}
+                          accept=".xlsx,.xls,.doc,.docx,.pdf,.zip,.rar,.ppt,.pptx"
+                          disabled={detailTasks.status === "Proposed"}
+                        />
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style={{ paddingLeft: "5px", paddingTop: "5px" }}>
+                        <b>Status</b>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td
+                        style={{ paddingLeft: "5px", width: "100%" }}
+                        colSpan={"3"}
+                      >
+                        <Select
+                          onChange={(event) => handleNewStatusChange(event)}
+                          options={statusTaskOptions}
+                        />
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <Button
+                          style={{ marginLeft: "5px", marginTop: "10px" }}
+                          variant="primary"
+                          type="submit"
+                          disabled={detailTasks.status === "Proposed"}
+                        >
+                          Submit
+                        </Button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </Form>
             </div>
           ) : (
             <div className="card-body">
