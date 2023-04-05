@@ -237,25 +237,18 @@ function RubricPage() {
       cell: (row) => (
         <>
           <div>
-            {row.status_approval === "revision" ? (
+            {row.status_approval !== "approve" ? (
               <Button
-                variant="warning"
+                variant="danger"
                 size="sm"
+                style={{ marginLeft: "10px" }}
                 onClick={() => handleDetailRubricClick(row)}
               >
-                Edit
+                Delete
               </Button>
             ) : (
               ""
             )}
-            <Button
-              variant="danger"
-              size="sm"
-              style={{ marginLeft: "10px" }}
-              onClick={() => handleDetailRubricClick(row)}
-            >
-              Delete
-            </Button>
           </div>
         </>
       ),
@@ -275,16 +268,14 @@ function RubricPage() {
   ];
 
   const scoreOption = [
-    { value: "manual", label: "Manual 1-5 Score" },
+    { value: "manual", label: "Score 5-to-1" },
     { value: "task", label: "Based On Task" },
-    { value: "self", label: "Self Assessment" },
+    { value: "self_assess", label: "Self Assessment" },
   ];
 
   const trackingOption = [
-    { value: "KPI", label: "Manual" },
-    { value: "attendance", label: "Attendance" },
+    { value: "self_assess", label: "Self Assessment" },
     { value: "task_completion_rate", label: "Task Completion Rate" },
-    { value: "task_score", label: "Task Score" },
   ];
 
   const customStyles = {

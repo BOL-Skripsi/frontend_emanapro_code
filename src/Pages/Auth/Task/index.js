@@ -26,10 +26,13 @@ function TaskPage() {
   const [newTaskDueDateTime, setNewTaskDueDateTime] = useState("");
   const [newTaskPriority, setNewTaskPriority] = useState("");
   const [newTaskFile, setNewFileUpload] = useState();
+  const [newTaskReplyFile, setNewReplyFileUpload] = useState();
+  const [newTaskReplyDescription, setNewTaskReplyDescription] = useState("");
   const [selectedTask, setSelectedTask] = useState(null);
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
+    date.setHours(date.getHours() + 7); // Add 7 hours to the date
     const options = {
       year: "numeric",
       month: "long",
@@ -41,6 +44,7 @@ function TaskPage() {
     };
     return date.toLocaleDateString("en-US", options);
   };
+
   const fetchMyTeam = async () => {
     try {
       const orgId = "71152531-e247-467f-8839-b78c14d7f71e";
@@ -130,28 +134,9 @@ function TaskPage() {
     }
   };
 
-  const fetchCompletedTasks = async () => {
-    // try {
-    //   const orgId = "71152531-e247-467f-8839-b78c14d7f71e";
-    //   const config = {
-    //     headers: {
-    //       Authorization: `Bearer ${Cookies.get("_auth")}`,
-    //     },
-    //   };
-    //   const response = await axios.get(
-    //     `http://localhost:3000/tasks/${orgId}/completed`,
-    //     config
-    //   );
-    //   // setCompletedTasks(response.data.tasks);
-    // } catch (error) {
-    //   console.error(error);
-    // }
-  };
-
   useEffect(() => {
     fetchMyTeam();
     fetchPersonalTasks();
-    // fetchCompletedTasks();
   }, []);
 
   const columnsPersonal = [
@@ -184,22 +169,22 @@ function TaskPage() {
       ),
     },
     {
-      name: "Start Date",
-      selector: "start_time",
-      sortable: true,
-      cell: (row) => (
-        <>
-          <div>{row.start_time ? formatDate(row.start_time) : ""}</div>
-        </>
-      ),
-    },
-    {
       name: "Due Date",
       selector: "due_datetime",
       sortable: true,
       cell: (row) => (
         <>
           <div>{row.due_datetime ? formatDate(row.due_datetime) : ""}</div>
+        </>
+      ),
+    },
+    {
+      name: "Start Date",
+      selector: "start_time",
+      sortable: true,
+      cell: (row) => (
+        <>
+          <div>{row.start_time ? formatDate(row.start_time) : ""}</div>
         </>
       ),
     },
@@ -214,9 +199,24 @@ function TaskPage() {
       ),
     },
     {
-      name: "Status",
+      name: "Approval Status",
       selector: "status",
       sortable: true,
+      cell: (row) => (
+        <>
+          <div>{row.status?.toUpperCase()}</div>
+        </>
+      ),
+    },
+    {
+      name: "Task Status",
+      selector: "last_reply_status",
+      sortable: true,
+      cell: (row) => (
+        <>
+          <div>{row.last_reply_status?.toUpperCase()}</div>
+        </>
+      ),
     },
     {
       name: "Action",
@@ -233,12 +233,6 @@ function TaskPage() {
         </>
       ),
       button: true,
-      width: "100px",
-      style: {
-        width: "20%",
-        minWidth: "100px",
-        textAlign: "center",
-      },
     },
   ];
 
@@ -306,7 +300,7 @@ function TaskPage() {
       formData.append("due_datetime", newTaskDueDateTime);
       formData.append("priority", newTaskPriority);
       formData.append("assign_to", userId);
-      formData.append("status", "Proposed");
+      formData.append("status", "proposed");
       formData.append("file", newTaskFile);
       await axios.post("http://localhost:3000/task/personal", formData, config);
       fetchPersonalTasks();
@@ -326,7 +320,58 @@ function TaskPage() {
     try {
       await axios.post(`http://localhost:3000/tasks/${userId}`);
       fetchPersonalTasks();
-      fetchCompletedTasks();
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleSubmitStartTask = async (event) => {
+    event.preventDefault();
+    try {
+      const taskId = selectedTask.uuid;
+      const currentDate = new Date();
+      const isoDate =
+        currentDate.getFullYear() +
+        "-" +
+        (currentDate.getMonth() + 1).toString().padStart(2, "0") +
+        "-" +
+        currentDate.getDate().toString().padStart(2, "0") +
+        "T" +
+        currentDate.getHours().toString().padStart(2, "0") +
+        ":" +
+        currentDate.getMinutes().toString().padStart(2, "0");
+      await axios.put(`http://localhost:3000/task/${userId}/${taskId}/start`, {
+        start_time: isoDate,
+      });
+      fetchPersonalTasks();
+      setShowDetailTaskModal(false);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleSubmitReplyTask = async (event) => {
+    event.preventDefault();
+    try {
+      const taskId = selectedTask.uuid;
+      const config = {
+        headers: {
+          Authorization: `Bearer ${Cookies.get("_auth")}`,
+          "content-type": "multipart/form-data",
+        },
+      };
+      const formData = new FormData();
+      formData.append("description", newTaskReplyDescription);
+      formData.append("file", newTaskReplyFile);
+      await axios.post(
+        `http://localhost:3000/task/${userId}/${taskId}/reply`,
+        formData,
+        config
+      );
+      fetchPersonalTasks();
+      setShowDetailTaskModal(false);
+      setNewTaskReplyDescription("");
+      setNewReplyFileUpload("");
     } catch (error) {
       console.error(error);
     }
@@ -376,10 +421,17 @@ function TaskPage() {
     setNewTaskDueDateTime(event.target.value);
   };
   const handleNewTaskPriorityChange = (event) => {
-    setNewTaskPriority(event.target.value);
+    setNewTaskPriority(event);
   };
   const handleNewFileUploadChange = (event) => {
     setNewFileUpload(event.target.files[0]);
+  };
+
+  const handleNewTaskReplyDescriptionChange = (event) => {
+    setNewTaskReplyDescription(event.target.value);
+  };
+  const handleNewReplyFileUploadChange = (event) => {
+    setNewReplyFileUpload(event.target.files[0]);
   };
 
   return (
@@ -511,7 +563,7 @@ function TaskPage() {
             <Form.Group>
               <Form.Label>Priority</Form.Label>
               <Select
-                onChange={(event) => setNewTaskPriority(event.value)}
+                onChange={(event) => handleNewTaskPriorityChange(event.value)}
                 options={priorityOptions}
               />
             </Form.Group>
@@ -551,171 +603,186 @@ function TaskPage() {
           </Button>
         </Modal.Header>
         <Modal.Body>
-          <Form onSubmit={handleSubmitTeamTask}>
-            <div className="card-body">
-              <h5>Task Detail</h5>
-              <table style={{ padding: "10px" }}>
-                <tbody>
-                  <tr>
-                    <td style={{ verticalAlign: "top" }}>
-                      <strong>Task Name</strong>
-                    </td>
-                    <td style={{ verticalAlign: "top" }}>:</td>
-                    <td style={{ paddingLeft: "5px" }}>
-                      {detailTasks.task_name}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td style={{ verticalAlign: "top" }}>
-                      <strong>Description</strong>
-                    </td>
-                    <td style={{ verticalAlign: "top" }}>:</td>
-                    <td style={{ paddingLeft: "5px" }}>
-                      {detailTasks.description}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td style={{ verticalAlign: "top" }}>
-                      <strong>Priority</strong>
-                    </td>
-                    <td style={{ verticalAlign: "top" }}>:</td>
-                    <td style={{ paddingLeft: "5px" }}>
-                      {detailTasks.priority}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td style={{ verticalAlign: "top" }}>
-                      <strong>Start Date</strong>
-                    </td>
-                    <td style={{ verticalAlign: "top" }}>:</td>
-                    <td style={{ paddingLeft: "5px" }}>
-                      {detailTasks.start_time
-                        ? formatDate(detailTasks.start_time)
-                        : ""}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td style={{ verticalAlign: "top" }}>
-                      <strong>Due Date</strong>
-                    </td>
-                    <td style={{ verticalAlign: "top" }}>:</td>
-                    <td style={{ paddingLeft: "5px" }}>
-                      {detailTasks.due_datetime
-                        ? formatDate(detailTasks.due_datetime)
-                        : ""}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td style={{ verticalAlign: "top" }}>
-                      <strong>Attachment</strong>
-                    </td>
-                    <td style={{ verticalAlign: "top" }}>:</td>
-                    <td style={{ verticalAlign: "top", paddingLeft: "5px" }}>
-                      {detailTasksFile.length > 0 ? (
-                        <>
-                          {detailTasksFile.map((file) => (
-                            <a
-                              onClick={() => downloadFile(file.file_name)}
-                              style={{
-                                color: "blue",
-                                cursor: "pointer",
-                                transition: "filter 0.2s ease",
-                              }}
-                            >
-                              {file.file_name}
-                            </a>
-                          ))}
-                        </>
-                      ) : (
-                        "No attachment"
-                      )}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td style={{ verticalAlign: "top" }}>
-                      <strong>Status</strong>
-                    </td>
-                    <td style={{ verticalAlign: "top" }}>:</td>
-                    <td style={{ paddingLeft: "5px" }}>{detailTasks.status}</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-            {detailTasks.status === "Proposed" ? (
+          <div className="card-body">
+            <h5>Task Detail</h5>
+            <table style={{ padding: "10px" }}>
+              <tbody>
+                <tr>
+                  <td style={{ verticalAlign: "top" }}>
+                    <strong>Task Name</strong>
+                  </td>
+                  <td style={{ verticalAlign: "top" }}>:</td>
+                  <td style={{ paddingLeft: "5px" }}>
+                    {detailTasks.task_name}
+                  </td>
+                </tr>
+                <tr>
+                  <td style={{ verticalAlign: "top" }}>
+                    <strong>Description</strong>
+                  </td>
+                  <td style={{ verticalAlign: "top" }}>:</td>
+                  <td style={{ paddingLeft: "5px" }}>
+                    {detailTasks.description}
+                  </td>
+                </tr>
+                <tr>
+                  <td style={{ verticalAlign: "top" }}>
+                    <strong>Priority</strong>
+                  </td>
+                  <td style={{ verticalAlign: "top" }}>:</td>
+                  <td style={{ paddingLeft: "5px" }}>{detailTasks.priority}</td>
+                </tr>
+                <tr>
+                  <td style={{ verticalAlign: "top" }}>
+                    <strong>Due Date</strong>
+                  </td>
+                  <td style={{ verticalAlign: "top" }}>:</td>
+                  <td style={{ paddingLeft: "5px" }}>
+                    {detailTasks.due_datetime
+                      ? formatDate(detailTasks.due_datetime)
+                      : ""}
+                  </td>
+                </tr>
+                <tr>
+                  <td style={{ verticalAlign: "top" }}>
+                    <strong>Start Date</strong>
+                  </td>
+                  <td style={{ verticalAlign: "top" }}>:</td>
+                  <td style={{ paddingLeft: "5px" }}>
+                    {detailTasks.start_time
+                      ? formatDate(detailTasks.start_time)
+                      : ""}
+                  </td>
+                </tr>
+                <tr>
+                  <td style={{ verticalAlign: "top" }}>
+                    <strong>Attachment</strong>
+                  </td>
+                  <td style={{ verticalAlign: "top" }}>:</td>
+                  <td style={{ verticalAlign: "top", paddingLeft: "5px" }}>
+                    {detailTasksFile.length > 0 ? (
+                      <>
+                        {detailTasksFile.map((file) => (
+                          <a
+                            onClick={() => downloadFile(file.file_name)}
+                            style={{
+                              color: "blue",
+                              cursor: "pointer",
+                              transition: "filter 0.2s ease",
+                            }}
+                          >
+                            {file.file_name}
+                          </a>
+                        ))}
+                      </>
+                    ) : (
+                      "No attachment"
+                    )}
+                  </td>
+                </tr>
+                <tr>
+                  <td style={{ verticalAlign: "top" }}>
+                    <strong>Status</strong>
+                  </td>
+                  <td style={{ verticalAlign: "top" }}>:</td>
+                  <td style={{ paddingLeft: "5px" }}>
+                    {detailTasks.status?.toUpperCase()}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          {!detailTasks.start_time && detailTasks.status === "approve" ? (
+            <Form onSubmit={handleSubmitStartTask}>
+              <div className="card-body">
+                <h5>Manager Approval</h5>
+                <div>{detailTasks.manager_comment}</div>
+              </div>
               <div className="card-body">
                 <Button
                   variant="primary"
                   type="submit"
-                  disabled={detailTasks.status === "Proposed"}
+                  disabled={detailTasks.status === "proposed"}
                   style={{ width: "100%" }}
                 >
                   Start Task
                 </Button>
               </div>
-            ) : (
-              ""
-            )}
-            {detailTasks.status === "Started" ? (
+            </Form>
+          ) : (
+            ""
+          )}
+          {detailTasks.start_time && detailTasks.status !== "not approve" ? (
+            <div>
               <div className="card-body">
-                <h5>Task Answer</h5>
-
-                <table style={{ padding: "10px" }}>
-                  <tbody>
-                    <tr>
-                      <td style={{ verticalAlign: "top" }}>
-                        <strong>Description</strong>
-                      </td>
-                      <td style={{ verticalAlign: "top" }}>:</td>
-                      <td style={{ paddingLeft: "5px", width: "100%" }}>
-                        <Form.Control
-                          as="textarea"
-                          placeholder="Enter task answer description"
-                          value={newTaskDescription}
-                          style={{ width: "100%" }}
-                          onChange={handleNewTaskDescriptionChange}
-                          disabled={detailTasks.status === "Proposed"}
-                        />
-                      </td>
-                    </tr>
-                    <tr>
-                      <td style={{ verticalAlign: "top" }}>
-                        <strong>File</strong>
-                      </td>
-                      <td style={{ verticalAlign: "top" }}>:</td>
-                      <td style={{ paddingLeft: "5px", width: "100%" }}>
-                        <Form.Control
-                          type="file"
-                          id="custom-file"
-                          label="Choose file"
-                          custom
-                          multiple
-                          onChange={handleNewFileUploadChange}
-                          accept=".xlsx,.xls,.doc,.docx,.pdf,.zip,.rar,.ppt,.pptx"
-                          disabled={detailTasks.status === "Proposed"}
-                        />
-                      </td>
-                    </tr>
-                    <tr>
-                      <td></td>
-                      <td></td>
-                      <td>
-                        <Button
-                          style={{ marginTop: "10px" }}
-                          variant="primary"
-                          type="submit"
-                          disabled={detailTasks.status === "Proposed"}
-                        >
-                          Submit
-                        </Button>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
+                <h5>Manager Approval</h5>
+                <div>{detailTasks.manager_comment}</div>
               </div>
-            ) : (
-              ""
-            )}
-          </Form>
+              <div className="card-body">
+                <h5>Task Reply</h5>
+                <Form onSubmit={handleSubmitReplyTask}>
+                  <table style={{ padding: "10px" }}>
+                    <tbody>
+                      <tr>
+                        <td style={{ verticalAlign: "top" }}>
+                          <strong>Description</strong>
+                        </td>
+                        <td style={{ verticalAlign: "top" }}>:</td>
+                        <td style={{ paddingLeft: "5px", width: "100%" }}>
+                          <Form.Control
+                            as="textarea"
+                            placeholder="Enter task reply description"
+                            style={{ width: "100%" }}
+                            onChange={handleNewTaskReplyDescriptionChange}
+                            disabled={detailTasks.status === "proposed"}
+                          />
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style={{ verticalAlign: "top" }}>
+                          <strong>File</strong>
+                        </td>
+                        <td style={{ verticalAlign: "top" }}>:</td>
+                        <td style={{ paddingLeft: "5px", width: "100%" }}>
+                          <Form.Control
+                            type="file"
+                            id="custom-file"
+                            label="Choose file"
+                            custom
+                            multiple
+                            onChange={handleNewReplyFileUploadChange}
+                            accept=".xlsx,.xls,.doc,.docx,.pdf,.zip,.rar,.ppt,.pptx"
+                            disabled={detailTasks.status === "proposed"}
+                          />
+                        </td>
+                      </tr>
+                      <tr>
+                        <td></td>
+                        <td></td>
+                        <td>
+                          <Button
+                            style={{ marginTop: "10px" }}
+                            variant="primary"
+                            type="submit"
+                            disabled={detailTasks.status === "proposed"}
+                          >
+                            Submit
+                          </Button>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </Form>
+              </div>
+            </div>
+          ) : detailTasks.status === "not approve" ? (
+            <div className="card-body">
+              <h5>Manager Approval</h5>
+              <div>{detailTasks.manager_comment}</div>
+            </div>
+          ) : (
+            ""
+          )}
         </Modal.Body>
       </Modal>
       <Modal
