@@ -105,6 +105,14 @@ function App() {
             </RequireAuth>
           }
         />
+        <Route
+          path="/change_password/"
+          element={
+            <RequireAuth loginPath="/login">
+              <AuthLayout page="change_password" />
+            </RequireAuth>
+          }
+        />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/forgot" element={<ForgotPasswordPage />} />

@@ -36,7 +36,10 @@ function EmployeePage() {
       second: "numeric",
       timeZone: "UTC",
     };
-    return date.toLocaleDateString("en-US", options);
+    const tanggal = dateString
+      ? date.toLocaleDateString("en-US", options)
+      : "NOT STARTED";
+    return tanggal;
   };
   const fetchKpiData = async () => {
     try {
@@ -163,6 +166,16 @@ function EmployeePage() {
       cell: (row) => (
         <>
           <div>{`${row.num_rubrics} Rubric / ${row.num_assessments_with_score} Assess`}</div>
+        </>
+      ),
+    },
+    {
+      name: "Assessment Period",
+      selector: "assessment_period",
+      sortable: true,
+      cell: (row) => (
+        <>
+          <div>{row.assessment_period?.toUpperCase() ? row.assessment_period.toUpperCase() : 'NO PERIOD'}</div>
         </>
       ),
     },

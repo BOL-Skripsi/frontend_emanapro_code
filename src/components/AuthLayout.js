@@ -14,6 +14,7 @@ import Task from "../Pages/Auth/Task/index";
 import TaskManagement from "../Pages/Auth/Task_management/index";
 import TaskChecking from "../Pages/Auth/Task-Checking/index";
 import Employee from "../Pages/Auth/Employee/index";
+import Change from "../Pages/Auth/Change_password/index";
 
 function AuthLayout(props) {
   let content;
@@ -51,6 +52,9 @@ function AuthLayout(props) {
       break;
     case "employee":
       content = <Employee />;
+      break;
+    case "change_password":
+      content = <Change />;
       break;
     default:
       content = <Home />;

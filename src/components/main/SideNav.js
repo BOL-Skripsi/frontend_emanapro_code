@@ -21,6 +21,7 @@ const SideNav = () => {
             Authorization: `Bearer ${Cookies.get("_auth")}`,
           },
         };
+        console.log(auth().userChange);
         const response = await axios.get(
           `http://localhost:3000/organization/${userId}/${orgId}/roles`,
           config
@@ -40,20 +41,32 @@ const SideNav = () => {
         { path: "/", name: "Dashboard", icon: "fas fa-tachometer-alt" },
         { path: "/rubric", name: "Assessment Rubric", icon: "fas fa-file-alt" },
         { path: "/kpi", name: "KPI", icon: "fas fa-chart-line" },
-        { path: "/team_management", name: "Team Management", icon: "fas fa-users" },
+        {
+          path: "/team_management",
+          name: "Team Management",
+          icon: "fas fa-users",
+        },
         { path: "/task", name: "Task", icon: "fas fa-check-double" },
         {
           path: "/task-checking",
           name: "Task Checking",
           icon: "fas fa-tasks",
         },
-        { path: "/employee", name: "Employee", icon: "fas fa-user-tie" }
+        { path: "/employee", name: "Employee", icon: "fas fa-user-tie" },
       ],
       manager: [
         { path: "/", name: "Dashboard", icon: "fas fa-tachometer-alt" },
         { path: "/rubric", name: "Assessment Rubric", icon: "fas fa-file-alt" },
-        { path: "/kpi_assessment", name: "KPI Assessment", icon: "fas fa-chart-line" },
-        { path: "/team_management", name: "Team Management", icon: "fas fa-users" },
+        {
+          path: "/kpi_assessment",
+          name: "KPI Assessment",
+          icon: "fas fa-chart-line",
+        },
+        {
+          path: "/team_management",
+          name: "Team Management",
+          icon: "fas fa-users",
+        },
         {
           path: "/task_management",
           name: "Task Management",
@@ -63,7 +76,11 @@ const SideNav = () => {
       hrd: [
         { path: "/", name: "Dashboard", icon: "fas fa-tachometer-alt" },
         { path: "/employee", name: "Employee", icon: "fas fa-user-tie" },
-        { path: "/rubric_review", name: "Rubric Review", icon: "fas fa-file-alt" },
+        {
+          path: "/rubric_review",
+          name: "Rubric Review",
+          icon: "fas fa-file-alt",
+        },
         { path: "/kpi_review", name: "KPI Review", icon: "fas fa-chart-line" },
         // {
         //   path: "/task-checking",
@@ -92,7 +109,12 @@ const SideNav = () => {
       <aside className="main-sidebar sidebar-dark-primary elevation-4">
         {/* Brand Logo */}
         <a href="index3.html" className="brand-link">
-          <span className="brand-text font-weight-heavy" style={{paddingLeft:'20px', fontWeight:'bold'}}>E-Performance</span>
+          <span
+            className="brand-text font-weight-heavy"
+            style={{ paddingLeft: "20px", fontWeight: "bold" }}
+          >
+            E-Performance
+          </span>
         </a>
         {/* Sidebar */}
         <div className="sidebar">
@@ -106,7 +128,6 @@ const SideNav = () => {
               {menuItems.map((menu) => (
                 <li className="nav-item" key={menu.path}>
                   <NavLink
-                    exact
                     to={menu.path}
                     className={`nav-link ${
                       activeLink === menu.path && "active"
@@ -118,6 +139,22 @@ const SideNav = () => {
                   </NavLink>
                 </li>
               ))}
+              {auth().userChange ? (
+                ""
+              ) : (
+                <li className="nav-item">
+                  <NavLink
+                    to={"/change_password"}
+                    className={`nav-link ${
+                      activeLink === "change_password" && "active"
+                    }`}
+                    onClick={() => setActiveLink("change_password")}
+                  >
+                    <i className={`fas fa-user nav-icon`} />
+                    <p>Change Password</p>
+                  </NavLink>
+                </li>
+              )}
             </ul>
           </nav>
           {/* /.sidebar-menu */}

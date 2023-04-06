@@ -24,6 +24,7 @@ function Login({ onLogin }) {
         authState: {
           userId: response.data.user.id,
           userUuid: response.data.user.uuid,
+          userChange: response.data.user.change_password
         },
       });
       navigate("/");
