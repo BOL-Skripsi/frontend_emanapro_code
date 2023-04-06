@@ -14,6 +14,7 @@ function TaskPage() {
   const [personalTasks, setPersonalTasks] = useState([]);
   const [detailTasks, setDetailTasks] = useState([]);
   const [detailTasksFile, setDetailTasksFile] = useState([]);
+  const [taskReply, setTaskReply] = useState([]);
   const [currentTeam, setCurrentTeam] = useState([]);
   const [newPersonalTasks, setNewPersonalTasks] = useState([]);
   const [teamTasks, setTeamTasks] = useState([]);
@@ -76,6 +77,23 @@ function TaskPage() {
         config
       );
       setPersonalTasks(response.data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const fetchTaskReply = async (taskId) => {
+    try {
+      const config = {
+        headers: {
+          Authorization: `Bearer ${Cookies.get("_auth")}`,
+        },
+      };
+      const response = await axios.get(
+        `http://localhost:3000/task/reply/${taskId}`,
+        config
+      );
+      setTaskReply(response.data);
     } catch (error) {
       console.error(error);
     }
@@ -408,6 +426,7 @@ function TaskPage() {
   const handleDetailTaskClick = (row) => {
     fetchDetailTasks(row.uuid);
     fetchDetailTasksFile(row.uuid);
+    fetchTaskReply(row.uuid);
     setSelectedTask(row);
     setShowDetailTaskModal(true);
   };
@@ -721,55 +740,177 @@ function TaskPage() {
               <div className="card-body">
                 <h5>Task Reply</h5>
                 <Form onSubmit={handleSubmitReplyTask}>
-                  <table style={{ padding: "10px" }}>
+                  <table
+                    style={{
+                      padding: "10px",
+                      width: "100%",
+                    }}
+                  >
                     <tbody>
-                      <tr>
-                        <td style={{ verticalAlign: "top" }}>
-                          <strong>Description</strong>
-                        </td>
-                        <td style={{ verticalAlign: "top" }}>:</td>
-                        <td style={{ paddingLeft: "5px", width: "100%" }}>
-                          <Form.Control
-                            as="textarea"
-                            placeholder="Enter task reply description"
-                            style={{ width: "100%" }}
-                            onChange={handleNewTaskReplyDescriptionChange}
-                            disabled={detailTasks.status === "proposed"}
-                          />
-                        </td>
-                      </tr>
-                      <tr>
-                        <td style={{ verticalAlign: "top" }}>
-                          <strong>File</strong>
-                        </td>
-                        <td style={{ verticalAlign: "top" }}>:</td>
-                        <td style={{ paddingLeft: "5px", width: "100%" }}>
-                          <Form.Control
-                            type="file"
-                            id="custom-file"
-                            label="Choose file"
-                            custom
-                            multiple
-                            onChange={handleNewReplyFileUploadChange}
-                            accept=".xlsx,.xls,.doc,.docx,.pdf,.zip,.rar,.ppt,.pptx"
-                            disabled={detailTasks.status === "proposed"}
-                          />
-                        </td>
-                      </tr>
-                      <tr>
-                        <td></td>
-                        <td></td>
-                        <td>
-                          <Button
-                            style={{ marginTop: "10px" }}
-                            variant="primary"
-                            type="submit"
-                            disabled={detailTasks.status === "proposed"}
+                      {taskReply.length > 0 ? (
+                        taskReply.map((data) => (
+                          <>
+                            <tr>
+                              <td
+                                style={{
+                                  verticalAlign: "top",
+                                  width: "20%",
+                                  paddingLeft: "5px",
+                                }}
+                              >
+                                <strong>Your Reply</strong>
+                              </td>
+                              <td
+                                style={{
+                                  verticalAlign: "top",
+                                }}
+                                width="1%"
+                              >
+                                :
+                              </td>
+                              <td
+                                style={{
+                                  paddingLeft: "5px",
+                                  width: "80%",
+                                }}
+                                colSpan={"3"}
+                              >
+                                {data.reply_comment}
+                              </td>
+                            </tr>
+                            <tr>
+                              <td></td>
+                              <td></td>
+                              <td style={{ paddingLeft: "5px" }}>
+                                <a
+                                  onClick={() => downloadFile(data.file_name)}
+                                  style={{
+                                    color: "blue",
+                                    cursor: "pointer",
+                                    transition: "filter 0.2s ease",
+                                  }}
+                                >
+                                  {data.file_name}
+                                </a>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td
+                                style={{
+                                  verticalAlign: "top",
+                                  width: "20%",
+                                  paddingLeft: "5px",
+                                }}
+                              >
+                                <strong>Manager</strong>
+                              </td>
+                              <td
+                                style={{
+                                  verticalAlign: "top",
+                                }}
+                                width="1%"
+                              >
+                                :
+                              </td>
+                              <td
+                                style={{
+                                  paddingLeft: "5px",
+                                  width: "80%",
+                                }}
+                                colSpan={"3"}
+                              >
+                                {data.revision_comment}
+                              </td>
+                            </tr>
+                            <tr>
+                              <td></td>
+                              <td></td>
+                              <td style={{ paddingLeft: "5px", color: "red" }}>
+                                {data.reply_status?.toUpperCase()}
+                              </td>
+                            </tr>
+                          </>
+                        ))
+                      ) : (
+                        <tr>
+                          <td></td>
+                          <td></td>
+                          <td></td>
+                          <td></td>
+                        </tr>
+                      )}
+                      {taskReply[Object.keys(taskReply).length - 1]
+                        ?.reply_status !== "complete" && taskReply[Object.keys(taskReply).length - 1]
+                        ?.reply_status ? (
+                        <>
+                          <tr>
+                            <td
+                              style={{
+                                paddingLeft: "5px",
+                                verticalAlign: "top",
+                              }}
+                              colSpan={"3"}
+                            >
+                              <strong>Comment</strong>
+                            </td>
+                          </tr>
+                          <tr>
+                            <td
+                              style={{ paddingLeft: "5px", width: "100%" }}
+                              colSpan={"3"}
+                            >
+                              <Form.Control
+                                as="textarea"
+                                placeholder="Enter task reply description"
+                                style={{ width: "100%" }}
+                                onChange={handleNewTaskReplyDescriptionChange}
+                                disabled={detailTasks.status === "proposed"}
+                              />
+                            </td>
+                          </tr>
+                          <tr>
+                            <td
+                              style={{ paddingLeft: "5px", width: "100%" }}
+                              colSpan={"3"}
+                            >
+                              <Form.Control
+                                type="file"
+                                id="custom-file"
+                                label="Choose file"
+                                custom
+                                multiple
+                                onChange={handleNewReplyFileUploadChange}
+                                accept=".xlsx,.xls,.doc,.docx,.pdf,.zip,.rar,.ppt,.pptx"
+                                disabled={detailTasks.status === "proposed"}
+                              />
+                            </td>
+                          </tr>
+                          <tr>
+                            <td colSpan={"3"} style={{ paddingLeft: "5px" }}>
+                              <Button
+                                style={{ marginTop: "10px" }}
+                                variant="primary"
+                                type="submit"
+                                disabled={detailTasks.status === "proposed"}
+                              >
+                                Submit
+                              </Button>
+                            </td>
+                          </tr>
+                        </>
+                      ) : (
+                        <tr>
+                          <td
+                            colSpan={"3"}
+                            style={{ textAlign: "center", width: "100%" }}
                           >
-                            Submit
-                          </Button>
-                        </td>
-                      </tr>
+                            {taskReply[Object.keys(taskReply).length - 1]
+                              ?.reply_status === "complete"
+                              ? ""
+                              : "Waiting for manager reply"}
+                          </td>
+                        </tr>
+                      )}
                     </tbody>
                   </table>
                 </Form>

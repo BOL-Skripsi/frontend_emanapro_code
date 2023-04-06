@@ -16,6 +16,7 @@ function TaskPage() {
   const [detailTasks, setDetailTasks] = useState([]);
   const [taskReply, setTaskReply] = useState([]);
   const [detailTasksFile, setDetailTasksFile] = useState([]);
+  const [assignToData, setassignToData] = useState([]);
   // const [newPersonalTasks, setNewPersonalTasks] = useState([]);
   const [newComment, setNewComment] = useState("");
   const [newStatus, setNewStatus] = useState("");
@@ -132,6 +133,30 @@ function TaskPage() {
       };
       const response = await axios.get(
         `http://localhost:3000/task/reply/${taskId}`,
+        config
+      );
+      setTaskReply(response.data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const fetchTeamTaskReply = async (taskInfo) => {
+    try {
+      const config = {
+        headers: {
+          Authorization: `Bearer ${Cookies.get("_auth")}`,
+        },
+      };
+      const response = await axios.post(
+        `http://localhost:3000/task/team/reply`,{
+          attachment_name : taskInfo.attachment_name,
+          description : taskInfo.description,
+          due_datetime : taskInfo.due_datetime,
+          task_name : taskInfo.task_name,
+          priority : taskInfo.priority,
+          status : taskInfo.status
+        },
         config
       );
       setTaskReply(response.data);
@@ -602,9 +627,7 @@ function TaskPage() {
   };
 
   const handleDetailTaskTeamClick = (row) => {
-    // fetchDetailTasks(row.uuid);
-    // fetchDetailTasksFile(row.uuid);
-    // fetchTaskReply(row.uuid);
+    fetchTeamTaskReply(row);
     setSelectedTask(row);
     setShowDetailTaskTeamModal(true);
   };
@@ -1359,6 +1382,23 @@ function TaskPage() {
                     ) : (
                       "No attachment"
                     )}
+                  </td>
+                </tr>
+                <tr>
+                  <td style={{ verticalAlign: "top", paddingLeft: "5px" }}>
+                    <strong>Assign To</strong>
+                  </td>
+                  <td style={{ verticalAlign: "top" }}>:</td>
+                  <td>
+                    <ul>
+                      {selectedTask?.assign_to.split(",")?.map((e, index) => 
+                        <>
+                        <li key={index}>
+                          {e.trim()}
+                        </li>
+                        </>
+                      )}
+                    </ul>
                   </td>
                 </tr>
               </tbody>
