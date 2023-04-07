@@ -221,16 +221,16 @@ function EmployeePage() {
   const columnsDetail = [
     {
       name: "Team Member Name",
-      selector: "name",
+      selector: "user_name",
       sortable: true,
     },
     {
       name: "Assessment Progress",
-      selector: "team_members_count",
+      selector: "assessment_count",
       sortable: true,
       cell: (row) => (
         <>
-          <div>{`${row.num_assessments_with_score} / ${row.num_rubric_assessments} Assess`}</div>
+          <div>{`${row.assessment_count} / ${row.rubric_count} Assessment`}</div>
         </>
       ),
     },

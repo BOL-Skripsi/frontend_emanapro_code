@@ -9,14 +9,17 @@ import DataTable from "react-data-table-component";
 function EmployeePage() {
   const [kpiData, setKpiData] = useState([]);
   const [kpiTeamData, setKpiTeamData] = useState([]);
+  const [kpiCategoryTeamData, setKpiCategoryTeamData] = useState([]);
   const [kpiTeamMemberData, setKpiTeamMemberData] = useState([]);
   const [newPeriod, setNewPeriod] = useState("");
   const [showMemberKpiModal, setShowMemberKpiModal] = useState(false);
   const [showDetailKpiModal, setShowDetailKpiModal] = useState(false);
+  const [showDetailCategoryKpiModal, setShowDetailCategoryKpiModal] =
+    useState(false);
   const [showAddKpiModal, setShowAddKpiModal] = useState(false);
   const full = true;
   const [selectedRubric, setSelectedRubric] = useState(null);
-
+  const [selectedCategoryKpi, setSelectedCategoryKpi] = useState(null);
   const scoreOption = [
     { value: "5", label: "5" },
     { value: "4", label: "4" },
@@ -88,7 +91,7 @@ function EmployeePage() {
         `http://localhost:3000/kpi/open/${userId}/${duedateId}/${category}/form`,
         config
       );
-      setKpiTeamMemberData(response.data);
+      setKpiCategoryTeamData(response.data);
     } catch (error) {
       console.error(error);
     }
@@ -113,6 +116,17 @@ function EmployeePage() {
     setSelectedRubric(row);
     fetchKpiTeamData(row.user_id, row.assessment_due_date_uuid);
     setShowDetailKpiModal(true);
+  };
+
+  const handleDetailCategoryKpiClick = (row) => {
+    setSelectedCategoryKpi(row);
+    console.log(row);
+    fetchKpiAssessmentForm(
+      row.user_id,
+      row.assessment_due_date_uuid,
+      row.category
+    );
+    setShowDetailCategoryKpiModal(true);
   };
 
   const handleAddKpiClick = (row) => {
@@ -175,7 +189,11 @@ function EmployeePage() {
       sortable: true,
       cell: (row) => (
         <>
-          <div>{row.assessment_period?.toUpperCase() ? row.assessment_period.toUpperCase() : 'NO PERIOD'}</div>
+          <div>
+            {row.assessment_period?.toUpperCase()
+              ? row.assessment_period.toUpperCase()
+              : "NO PERIOD"}
+          </div>
         </>
       ),
     },
@@ -238,7 +256,7 @@ function EmployeePage() {
             <Button
               variant="primary"
               size="sm"
-              onClick={() => handleMemberKpiClick(row)}
+              onClick={() => handleDetailCategoryKpiClick(row)}
             >
               Detail
             </Button>
@@ -255,22 +273,78 @@ function EmployeePage() {
     },
   ];
 
-  const columnsAssessment = [
-    {
-      name: "No.",
-      selector: "id",
-      sortable: true,
-      subHeader: <span rowSpan={2}>No.</span>,
-    },
-    {
-      name: "Key Responsibilities",
-      selector: "keyResponsibilities",
-      sortable: true,
-      subHeader: <span rowSpan={2}>Key Responsibilities</span>,
-    },
+  const columnsDetailCategoryKPI = [
     {
       name: "Key Performance Indicator(KPI)",
-      selector: "kpi",
+      selector: "performance_metric",
+      sortable: true,
+    },
+    {
+      name: "Program Kerja",
+      selector: "description",
+      sortable: true,
+      cell: (row) => (
+        <>
+          <div>{`${row.description}`}</div>
+        </>
+      ),
+    },
+    {
+      name: "Measurement",
+      selector: "criteria",
+      sortable: true,
+      cell: (row) => (
+        <>
+          <div>{`${row.criteria}`}</div>
+        </>
+      ),
+    },
+    {
+      name: "Weight %",
+      selector: "weight",
+      sortable: true,
+    },
+    {
+      name: "Score",
+      selector: "score",
+      sortable: true,
+    },
+    {
+      name: "Score System",
+      selector: "score_system",
+      sortable: true,
+    },
+    {
+      name: "Action",
+      cell: (row) => (
+        <>
+          {row.score ? (
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={() => handleDetailCategoryKpiClick(row)}
+            >
+              Assess
+            </Button>
+          ) : (
+            ""
+          )}
+        </>
+      ),
+      button: true,
+      width: "100px",
+      style: {
+        width: "20%",
+        minWidth: "100px",
+        textAlign: "center",
+      },
+    },
+  ];
+
+  const columnsDetailCategoryCompetencies = [
+    {
+      name: "Competencies",
+      selector: "performance_metric",
       sortable: true,
     },
     {
@@ -279,29 +353,59 @@ function EmployeePage() {
       sortable: true,
     },
     {
-      name: "Tracking Source",
-      selector: "trackingSource",
+      name: "Behavior Designation",
+      selector: "criteria",
       sortable: true,
-    },
-    {
-      name: "Work Order",
-      selector: "workOrder",
-      sortable: true,
-    },
-    {
-      name: "Measurement",
-      selector: "measurement",
-      sortable: true,
-    },
-    {
-      name: "Assessment",
-      selector: "assessment",
-      sortable: true,
+      cell: (row) => (
+        <>
+          <div>{`${row.criteria}`}</div>
+        </>
+      ),
     },
     {
       name: "Score",
       selector: "score",
       sortable: true,
+    },
+    {
+      name: "Score System",
+      selector: "score",
+      sortable: true,
+    },
+    {
+      name: "Justification",
+      selector: "data_source",
+      cell: (row) => (
+        <>
+          <div>{`${row.data_source}`}</div>
+        </>
+      ),
+      sortable: true,
+    },
+    {
+      name: "Action",
+      cell: (row) => (
+        <>
+          {row.score ? (
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={() => handleDetailCategoryKpiClick(row)}
+            >
+              Assess
+            </Button>
+          ) : (
+            ""
+          )}
+        </>
+      ),
+      button: true,
+      width: "100px",
+      style: {
+        width: "20%",
+        minWidth: "100px",
+        textAlign: "center",
+      },
     },
   ];
 
@@ -370,7 +474,7 @@ function EmployeePage() {
         onHide={() => setShowDetailKpiModal(false)}
       >
         <Modal.Header>
-          <Modal.Title>KPI Assessment</Modal.Title>
+          <Modal.Title>Assessment</Modal.Title>
           <Button variant="text" onClick={() => setShowDetailKpiModal(false)}>
             X
           </Button>
@@ -388,6 +492,41 @@ function EmployeePage() {
 
       <Modal
         size="xl"
+        show={showDetailCategoryKpiModal}
+        onHide={() => setShowDetailCategoryKpiModal(false)}
+      >
+        <Modal.Header>
+          <Modal.Title>Assessment</Modal.Title>
+          <Button
+            variant="text"
+            onClick={() => setShowDetailCategoryKpiModal(false)}
+          >
+            X
+          </Button>
+        </Modal.Header>
+        <Modal.Body>
+          {selectedCategoryKpi?.category === "KPI" ? (
+            <DataTable
+              columns={columnsDetailCategoryKPI}
+              data={kpiCategoryTeamData}
+              noHeader
+              pagination
+              customStyles={customStyles}
+            />
+          ) : (
+            <DataTable
+              columns={columnsDetailCategoryCompetencies}
+              data={kpiCategoryTeamData}
+              noHeader
+              pagination
+              customStyles={customStyles}
+            />
+          )}
+        </Modal.Body>
+      </Modal>
+
+      <Modal
+        size="xl"
         fullscreen={full}
         show={showMemberKpiModal}
         onHide={() => setShowMemberKpiModal(false)}
@@ -395,8 +534,8 @@ function EmployeePage() {
         <Modal.Header>
           <Modal.Title>
             {" "}
-            {selectedRubric?.name && (
-              <span>{selectedRubric.name} Assessment Progress</span>
+            {selectedRubric?.user_name && (
+              <span>{selectedRubric.user_name} Assessment</span>
             )}
           </Modal.Title>
           <Button variant="text" onClick={() => setShowMemberKpiModal(false)}>
@@ -447,7 +586,7 @@ function EmployeePage() {
                         <td>
                           <input type="checkbox" />
                         </td>
-                        <td style={{ textAlign: "center" }}>{i++}</td>
+                        <td style={{ textAlign: "center" }}></td>
                         <td>{data.performance_metric}</td>
                         <td>{data.description}</td>
                         <td>{data.criteria}</td>
