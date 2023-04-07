@@ -7,19 +7,26 @@ import Select from "react-select";
 import DataTable from "react-data-table-component";
 
 function EmployeePage() {
+  const auth = useAuthUser();
+  const userId = auth().userUuid;
   const [kpiData, setKpiData] = useState([]);
   const [kpiTeamData, setKpiTeamData] = useState([]);
   const [kpiCategoryTeamData, setKpiCategoryTeamData] = useState([]);
   const [kpiTeamMemberData, setKpiTeamMemberData] = useState([]);
   const [newPeriod, setNewPeriod] = useState("");
+  const [newScore, setNewScore] = useState("");
   const [showMemberKpiModal, setShowMemberKpiModal] = useState(false);
   const [showDetailKpiModal, setShowDetailKpiModal] = useState(false);
   const [showDetailCategoryKpiModal, setShowDetailCategoryKpiModal] =
+    useState(false);
+  const [showDetailAssessmentKpiModal, setShowDetailAssessmentKpiModal] =
     useState(false);
   const [showAddKpiModal, setShowAddKpiModal] = useState(false);
   const full = true;
   const [selectedRubric, setSelectedRubric] = useState(null);
   const [selectedCategoryKpi, setSelectedCategoryKpi] = useState(null);
+  const [selectedAssessmentKpi, setSelectedAssessmentKpi] = useState(null);
+  const [newScoreDescription, setNewScoreDescription] = useState("");
   const scoreOption = [
     { value: "5", label: "5" },
     { value: "4", label: "4" },
@@ -53,7 +60,7 @@ function EmployeePage() {
         },
       };
       const response = await axios.get(
-        `http://localhost:3000/kpi/open`,
+        `http://localhost:3000/kpi/open/${userId}`,
         config
       );
       setKpiData(response.data);
@@ -109,9 +116,7 @@ function EmployeePage() {
     );
     setShowMemberKpiModal(true);
   };
-  const handleSubmitAssessment = (event) => {
-    console.log();
-  };
+
   const handleDetailKpiClick = (row) => {
     setSelectedRubric(row);
     fetchKpiTeamData(row.user_id, row.assessment_due_date_uuid);
@@ -120,13 +125,17 @@ function EmployeePage() {
 
   const handleDetailCategoryKpiClick = (row) => {
     setSelectedCategoryKpi(row);
-    console.log(row);
     fetchKpiAssessmentForm(
       row.user_id,
       row.assessment_due_date_uuid,
       row.category
     );
     setShowDetailCategoryKpiModal(true);
+  };
+
+  const handleDetailAssessmentKpiClick = (row) => {
+    setSelectedAssessmentKpi(row);
+    setShowDetailAssessmentKpiModal(true);
   };
 
   const handleAddKpiClick = (row) => {
@@ -136,6 +145,10 @@ function EmployeePage() {
 
   const handleNewPeriodChange = (event) => {
     setNewPeriod(event.target.value);
+  };
+
+  const handleNewScoreDescriptionChange = (event) => {
+    setNewScoreDescription(event.target.value);
   };
 
   const handleSubmitKpi = async (event) => {
@@ -156,7 +169,98 @@ function EmployeePage() {
       );
       setShowAddKpiModal(false);
       setNewPeriod("");
-      // fetchAllRubric();
+      // fetchKpiAssessmentForm()
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleSubmitAssessmentManual = async (event) => {
+    event.preventDefault();
+    try {
+      const assessmentId = selectedAssessmentKpi.uuid;
+      const config = {
+        headers: {
+          Authorization: `Bearer ${Cookies.get("_auth")}`,
+        },
+      };
+      const response = await axios.post(
+        `http://localhost:3000/kpi/assessment/${assessmentId}/`,
+        {
+          score: newScore,
+          uraian: newScoreDescription,
+        },
+        config
+      );
+      fetchKpiTeamData(
+        selectedAssessmentKpi.user_id,
+        selectedAssessmentKpi.assessment_duedate
+      );
+      setShowDetailAssessmentKpiModal(false);
+      setNewScore("");
+      setNewScoreDescription("");
+      fetchKpiAssessmentForm(
+        selectedAssessmentKpi.user_id,
+        selectedAssessmentKpi.assessment_duedate,
+        selectedAssessmentKpi.category
+      );
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleSubmitAssessmentChangeScore = async (event) => {
+    event.preventDefault();
+    try {
+      const assessmentId = selectedAssessmentKpi.uuid;
+      const config = {
+        headers: {
+          Authorization: `Bearer ${Cookies.get("_auth")}`,
+        },
+      };
+      const response = await axios.post(
+        `http://localhost:3000/kpi/assessment/${assessmentId}/change_score`,
+        {
+          score: newScore,
+        },
+        config
+      );
+      fetchKpiTeamData(
+        selectedAssessmentKpi.user_id,
+        selectedAssessmentKpi.assessment_duedate
+      );
+      setShowDetailAssessmentKpiModal(false);
+      setNewScore("");
+      setNewScoreDescription("");
+      fetchKpiAssessmentForm(
+        selectedAssessmentKpi.user_id,
+        selectedAssessmentKpi.assessment_duedate,
+        selectedAssessmentKpi.category
+      );
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleSubmitAssessmentAcceptScore = async (event) => {
+    event.preventDefault();
+    try {
+      // // const orgId = "71152531-e247-467f-8839-b78c14d7f71e";
+      // const config = {
+      //   headers: {
+      //     Authorization: `Bearer ${Cookies.get("_auth")}`,
+      //   },
+      // };
+      // const response = await axios.post(
+      //   `http://localhost:3000/kpi/period`,
+      //   {
+      //     kpi_duedate: newPeriod,
+      //   },
+      //   config
+      // );
+      // setShowAddKpiModal(false);
+      // setNewPeriod("");
+      // // fetchAllRubric();
     } catch (error) {
       console.error(error);
     }
@@ -190,9 +294,21 @@ function EmployeePage() {
       cell: (row) => (
         <>
           <div>
-            {row.assessment_period?.toUpperCase()
-              ? row.assessment_period.toUpperCase()
+            {row.kpi_period?.toUpperCase()
+              ? row.kpi_period.toUpperCase()
               : "NO PERIOD"}
+          </div>
+        </>
+      ),
+    },
+    {
+      name: "Final Score",
+      selector: "final_score",
+      sortable: true,
+      cell: (row) => (
+        <>
+          <div>
+            {row.final_score}
           </div>
         </>
       ),
@@ -305,6 +421,26 @@ function EmployeePage() {
       sortable: true,
     },
     {
+      name: "Tracking Source",
+      selector: "data_source",
+      sortable: true,
+      cell: (row) => (
+        <div>
+          {row.data_source}
+        </div>
+      ),
+    },
+    {
+      name: "Description of performance results",
+      selector: "uraian_kinerja",
+      sortable: true,
+      cell: (row) => (
+        <div>
+          {row.uraian_kinerja}
+        </div>
+      ),
+    },
+    {
       name: "Score",
       selector: "score",
       sortable: true,
@@ -313,22 +449,47 @@ function EmployeePage() {
       name: "Score System",
       selector: "score_system",
       sortable: true,
+      cell: (row) => (
+        <div>
+          {row.score_system === "manual"
+            ? "Score 5-to-1"
+            : row.score_system === "self_assess"
+            ? "Self Assessment"
+            : ""}
+        </div>
+      ),
     },
     {
       name: "Action",
       cell: (row) => (
         <>
-          {row.score ? (
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={() => handleDetailCategoryKpiClick(row)}
-            >
-              Assess
-            </Button>
-          ) : (
-            ""
-          )}
+          <div>
+            {new Date(row.kpi_duedate) < new Date() ? (
+              ""
+            ) : row.score_system === "manual" && row.score === null ? (
+              <div>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={() => handleDetailAssessmentKpiClick(row)}
+                  style={{ width: "80px" }}
+                >
+                  Assess
+                </Button>
+              </div>
+            ) : (
+              <div>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  style={{ width: "80px", marginTop: "5px" }}
+                  onClick={() => handleDetailAssessmentKpiClick(row)}
+                >
+                  Detail
+                </Button>
+              </div>
+            )}
+          </div>
         </>
       ),
       button: true,
@@ -369,15 +530,24 @@ function EmployeePage() {
     },
     {
       name: "Score System",
-      selector: "score",
+      selector: "score_system",
       sortable: true,
+      cell: (row) => (
+        <div>
+          {row.score_system === "manual"
+            ? "Score 5-to-1"
+            : row.score_system === "self_assess"
+            ? "Self Assessment"
+            : ""}
+        </div>
+      ),
     },
     {
       name: "Justification",
-      selector: "data_source",
+      selector: "uraian_kinerja",
       cell: (row) => (
         <>
-          <div>{`${row.data_source}`}</div>
+          <div>{`${row?.uraian_kinerja ? row.uraian_kinerja : ""}`}</div>
         </>
       ),
       sortable: true,
@@ -386,17 +556,33 @@ function EmployeePage() {
       name: "Action",
       cell: (row) => (
         <>
-          {row.score ? (
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={() => handleDetailCategoryKpiClick(row)}
-            >
-              Assess
-            </Button>
-          ) : (
-            ""
-          )}
+          <div>
+            {new Date(row.kpi_duedate) < new Date() ? (
+              ""
+            ) : row.score_system === "manual" && row.score === null ? (
+              <div>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={() => handleDetailAssessmentKpiClick(row)}
+                  style={{ width: "80px" }}
+                >
+                  Assess
+                </Button>
+              </div>
+            ) : (
+              <div>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  style={{ width: "80px", marginTop: "5px" }}
+                  onClick={() => handleDetailAssessmentKpiClick(row)}
+                >
+                  Detail
+                </Button>
+              </div>
+            )}
+          </div>
         </>
       ),
       button: true,
@@ -524,7 +710,7 @@ function EmployeePage() {
           )}
         </Modal.Body>
       </Modal>
-
+      {/* 
       <Modal
         size="xl"
         fullscreen={full}
@@ -613,6 +799,95 @@ function EmployeePage() {
               </div>
             </div>
           </Form>
+        </Modal.Body>
+      </Modal> */}
+
+      <Modal
+        show={showDetailAssessmentKpiModal}
+        onHide={() => setShowDetailAssessmentKpiModal(false)}
+      >
+        <Modal.Header>
+          <Modal.Title>
+            Score{" "}
+            {selectedAssessmentKpi
+              ? selectedAssessmentKpi.performance_metric
+              : ""}
+          </Modal.Title>
+          <Button
+            variant="text"
+            onClick={() => setShowDetailAssessmentKpiModal(false)}
+          >
+            X
+          </Button>
+        </Modal.Header>
+        <Modal.Body>
+          {selectedAssessmentKpi?.score_system === "manual" ? (
+            <>
+              <Form onSubmit={handleSubmitAssessmentManual}>
+                <Form.Group>
+                  <Form.Label>Score 5-to-1</Form.Label>
+                  <Select
+                    options={scoreOption}
+                    placeholder="Select score"
+                    onChange={(event) => setNewScore(event.value)}
+                  />
+                </Form.Group>
+                {selectedAssessmentKpi?.category === "Competencies" ? (
+                  <Form.Group>
+                    <Form.Label>Description of performance results</Form.Label>
+                    <Form.Control
+                      as="textarea"
+                      placeholder="Enter description of performance results"
+                      value={newScoreDescription}
+                      onChange={handleNewScoreDescriptionChange}
+                    />
+                  </Form.Group>
+                ) : (
+                  <Form.Group>
+                    <Form.Label>Justification</Form.Label>
+                    <Form.Control
+                      as="textarea"
+                      placeholder="Enter justification"
+                      value={newScoreDescription}
+                      onChange={handleNewScoreDescriptionChange}
+                    />
+                  </Form.Group>
+                )}
+                <Button
+                  style={{ marginTop: "10px" }}
+                  variant="primary"
+                  type="submit"
+                >
+                  Submit
+                </Button>
+              </Form>
+            </>
+          ) : selectedAssessmentKpi?.score_system === "self_assess" &&
+            selectedAssessmentKpi.data_source === "" ? (
+            <>
+              <Form onSubmit={handleSubmitAssessmentChangeScore}>
+                <Form.Group>
+                  <Form.Label>Change Score</Form.Label>
+                  <Select
+                    options={scoreOption}
+                    placeholder="Select score"
+                    onChange={(event) => setNewScore(event.value)}
+                  />
+                </Form.Group>
+                <Button
+                  style={{ marginTop: "10px" }}
+                  variant="primary"
+                  type="submit"
+                >
+                  Submit
+                </Button>
+              </Form>
+            </>
+          ) : (
+            <Form onSubmit={handleSubmitAssessmentAcceptScore}>
+              Task List And Score
+            </Form>
+          )}
         </Modal.Body>
       </Modal>
     </div>

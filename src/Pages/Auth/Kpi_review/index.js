@@ -130,7 +130,6 @@ function EmployeePage() {
           kpi_startdate: newStartDate,
           kpi_duedate: newDueDate,
         },
-        config
       );
       setShowAddKpiModal(false);
       setNewPeriod("");

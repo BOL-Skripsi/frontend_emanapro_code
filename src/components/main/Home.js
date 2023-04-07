@@ -56,7 +56,7 @@ const Home = () => {
   const renderManagerCard = () => {
     return (
       <div className="row">
-        <div className="col-lg-8">
+        {/* <div className="col-lg-8">
           <div className="card">
             <div className="card-header">
               <h3 className="card-title">Task List To Approve</h3>
@@ -98,7 +98,7 @@ const Home = () => {
               </a>
             </div>
           </div>
-        </div>
+        </div> */}
       </div>
     );
   };

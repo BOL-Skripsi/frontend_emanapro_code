@@ -199,7 +199,7 @@ function RubricPage() {
       width: "150px",
       cell: (row) => (
         <div>
-          {row.score_system === "manual" ? "Score 5-to-1" : row.score_system}
+          {row.score_system === "manual" ? "Score 5-to-1" : row.score_system ==='self_assess' ? 'Self Assessment' : row.score_system}
         </div>
       ),
       style: {
