@@ -3,30 +3,41 @@ import Cookies from "js-cookie";
 import { Button, Form } from "react-bootstrap";
 import { useAuthUser } from "react-auth-kit";
 import axios from "axios";
+
 function ChangePage() {
   const auth = useAuthUser();
   const userId = auth().userUuid;
 
-  const [oldPassword, setOldPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(null);
+  const [formState, setFormState] = useState({
+    oldPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+    error: null,
+    success: null,
+  });
+
+  const handleInputChange = (event) => {
+    const { name, value } = event.target;
+    setFormState({ ...formState, [name]: value, error: null, success: null });
+  };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    setError(null);
 
-    // validate input
+    const { oldPassword, newPassword, confirmPassword } = formState;
+
     if (newPassword !== confirmPassword) {
-      setSuccess(null)
-      setError("New password and confirmation password do not match.");
+      setFormState({
+        ...formState,
+        success: null,
+        error: "New password and confirmation password do not match.",
+      });
       return;
     }
 
     try {
       const response = await axios.post(
-        `http://localhost:3000/auth/${userId}/password`,
+        `${process.env.REACT_APP_BASE_URL}/auth/${userId}/password`,
         {
           old_password: oldPassword,
           new_password: newPassword,
@@ -37,18 +48,27 @@ function ChangePage() {
           },
         }
       );
+      setFormState({
+        ...formState,
+        success: "Change Password Success",
+        oldPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+        error: null,
+      });
       console.log(response.data);
-      setSuccess('Change Password Success');
-      setOldPassword('')
-      setNewPassword('')
-      setConfirmPassword('')
-      setError(null)
     } catch (error) {
-      setSuccess(null)
+      setFormState({
+        ...formState,
+        success: null,
+        error: error.response?.data?.message || "An error occurred.",
+      });
       console.error(error);
-      setError(error.response?.data?.message || "An error occurred.");
     }
   };
+
+  const { oldPassword, newPassword, confirmPassword, error, success } =
+    formState;
 
   return (
     <div className="content-wrapper">
@@ -89,9 +109,10 @@ function ChangePage() {
                         type="password"
                         className="form-control"
                         id="old-password"
+                        name="oldPassword"
                         value={oldPassword}
                         placeholder="Input Your Old Password"
-                        onChange={(event) => setOldPassword(event.target.value)}
+                        onChange={handleInputChange}
                         required
                       />
                     </div>
@@ -101,9 +122,10 @@ function ChangePage() {
                         type="password"
                         className="form-control"
                         id="new-password"
-                        placeholder="Input Your New Password"
+                        name="newPassword"
                         value={newPassword}
-                        onChange={(event) => setNewPassword(event.target.value)}
+                        placeholder="Input Your New Password"
+                        onChange={handleInputChange}
                         required
                       />
                     </div>
@@ -116,15 +138,16 @@ function ChangePage() {
                         placeholder="Re-Input Your New Password"
                         className="form-control"
                         id="confirm-password"
+                        name="confirmPassword"
                         value={confirmPassword}
-                        onChange={(event) =>
-                          setConfirmPassword(event.target.value)
-                        }
+                        onChange={handleInputChange}
                         required
                       />
                     </div>
                     {error && <div className="alert alert-danger">{error}</div>}
-                    {success && <div className="alert alert-success">{success}</div>}
+                    {success && (
+                      <div className="alert alert-success">{success}</div>
+                    )}
                     <button type="submit" className="btn btn-primary">
                       Change Password
                     </button>
@@ -138,4 +161,5 @@ function ChangePage() {
     </div>
   );
 }
+
 export default ChangePage;

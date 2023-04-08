@@ -21,7 +21,7 @@ function RubricPage() {
           Authorization: `Bearer ${Cookies.get("_auth")}`,
         },
       };
-      const response = await axios.get(`http://localhost:3000/rubric/`, config);
+      const response = await axios.get(`${process.env.REACT_APP_BASE_URL}/rubric/`, config);
       setRubricData(response.data);
     } catch (error) {
       console.error(error);
@@ -125,7 +125,7 @@ function RubricPage() {
         },
       };
       const response = await axios.put(
-        `http://localhost:3000/rubric/${selectedRubric.uuid}/review`,
+        `${process.env.REACT_APP_BASE_URL}/rubric/${selectedRubric.uuid}/review`,
         {
           comment: newComment,
           status_approval: newStatus,

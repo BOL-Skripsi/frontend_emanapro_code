@@ -3,6 +3,7 @@ import { NavLink } from "react-router-dom";
 import axios from "axios";
 import { useAuthUser } from "react-auth-kit";
 import Cookies from "js-cookie";
+import myImage from './icon.png';
 
 const SideNav = () => {
   const auth = useAuthUser();
@@ -10,7 +11,7 @@ const SideNav = () => {
   const [selectedOrg, setSelectedOrg] = useState("");
   const [roles, setRoles] = useState([]);
   const [activeLink, setActiveLink] = useState("");
-
+  
   useEffect(() => {
     const fetchData = async () => {
       const orgId = "71152531-e247-467f-8839-b78c14d7f71e";
@@ -23,7 +24,7 @@ const SideNav = () => {
         };
         console.log(auth().userChange);
         const response = await axios.get(
-          `http://localhost:3000/organization/${userId}/${orgId}/roles`,
+          `${process.env.REACT_APP_BASE_URL}/organization/${userId}/${orgId}/roles`,
           config
         );
         setRoles(response.data);
@@ -109,9 +110,10 @@ const SideNav = () => {
       <aside className="main-sidebar sidebar-dark-primary elevation-4">
         {/* Brand Logo */}
         <a href="index3.html" className="brand-link">
+        <img src={myImage} alt="E-manapro Logo" className="brand-image img-circle elevation-3" style={{opacity: '.8'}} />
           <span
             className="brand-text font-weight-heavy"
-            style={{ paddingLeft: "20px", fontWeight: "bold" }}
+            style={{ paddingLeft: "5px", fontWeight: "bold" }}
           >
             E-Performance
           </span>

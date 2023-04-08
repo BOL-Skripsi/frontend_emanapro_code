@@ -61,12 +61,12 @@ function AuthLayout(props) {
   }
 
   return (
-    <>
+    <div class="wrapper">
       <Header />
       <SideNav />
       {content}
       <Footer />
-    </>
+    </div>
   );
 }
 

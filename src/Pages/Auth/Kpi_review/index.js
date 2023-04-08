@@ -51,7 +51,7 @@ function EmployeePage() {
           Authorization: `Bearer ${Cookies.get("_auth")}`,
         },
       };
-      const response = await axios.get(`http://localhost:3000/kpi/`, config);
+      const response = await axios.get(`${process.env.REACT_APP_BASE_URL}/kpi/`, config);
       setKpiData(response.data);
     } catch (error) {
       console.error(error);
@@ -67,7 +67,7 @@ function EmployeePage() {
         },
       };
       const response = await axios.get(
-        `http://localhost:3000/kpi/kpi_team_member/${teamId}`,
+        `${process.env.REACT_APP_BASE_URL}/kpi/kpi_team_member/${teamId}`,
         config
       );
       setKpiTeamData(response.data);
@@ -124,7 +124,7 @@ function EmployeePage() {
         },
       };
       const response = await axios.post(
-        `http://localhost:3000/kpi/period`,
+        `${process.env.REACT_APP_BASE_URL}/kpi/period`,
         {
           kpi_period: newPeriod,
           kpi_startdate: newStartDate,
@@ -148,7 +148,7 @@ function EmployeePage() {
         },
       };
       const response = await axios.post(
-        `http://localhost:3000/kpi/period/update`, {
+        `${process.env.REACT_APP_BASE_URL}/kpi/period/update`, {
           kpi_period: newPeriod
         },
         config

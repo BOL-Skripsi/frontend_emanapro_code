@@ -19,7 +19,7 @@ const Home = () => {
           },
         };
         const response = await axios.get(
-          `http://localhost:3000/organization/${userId}/${orgId}/roles`,
+          `${process.env.REACT_APP_BASE_URL}/organization/${userId}/${orgId}/roles`,
           config
         );
         setRoles(response.data);

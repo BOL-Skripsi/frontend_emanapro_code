@@ -11,14 +11,13 @@ function EmployeePage() {
   const userId = auth().userUuid;
   const [employeeData, setEmployeeData] = useState([]);
   const [showAddUserModal, setShowAddUserModal] = useState(false);
-  const [showProfileModal, setShowProfileModal] = useState(false);
   const [newEmployee, setNewEmployee] = useState("");
-  const [newUserName, setNewUserName] = useState("");
-  const [newUserEmail, setNewUserEmail] = useState("");
-  const [newUserRole, setNewUserRole] = useState("employee");
+  const [newUser, setNewUser] = useState({
+    name: "",
+    email: "",
+    role: "employee",
+  });
   const [selectedEmployee, setSelectedEmployee] = useState(null);
-
-
 
   const fetchEmployeeList = async () => {
     try {
@@ -29,7 +28,7 @@ function EmployeePage() {
         },
       };
       const response = await axios.get(
-        `http://localhost:3000/organization/${orgId}/employee`,
+        `${process.env.REACT_APP_BASE_URL}/organization/${orgId}/employee`,
         config
       );
       console.log(response.data);
@@ -64,26 +63,6 @@ function EmployeePage() {
       selector: "team_name",
       sortable: true,
     },
-    // {
-    //   name: "Action",
-    //   cell: (row) => (
-    //     <>
-    //       <Button
-    //         variant="primary"
-    //         size="sm"
-    //         onClick={() => handleProfileClick(row)}
-    //       >
-    //         Profile
-    //       </Button>
-    //     </>
-    //   ),
-    //   button: true,
-    //   style: {
-    //     width: "20%",
-    //     minWidth: "200px",
-    //     textAlign: "center",
-    //   },
-    // },
   ];
 
   const customStyles = {
@@ -101,24 +80,15 @@ function EmployeePage() {
     },
   };
 
-  const handleProfileClick = () => {
-    setShowProfileModal(true);
-  };
-
   const handleAddNewUserClick = () => {
     setShowAddUserModal(true);
   };
 
-  const handleNewUserNameChange = (event) => {
-    setNewUserName(event.target.value);
+  const handleNewUserChange = (event) => {
+    const { name, value } = event.target;
+    setNewUser((prev) => ({ ...prev, [name]: value }));
   };
-  const handleNewUserEmailChange = (event) => {
-    setNewUserEmail(event.target.value);
-  };
-  const handleNewUserRoleChange = (event) => {
-    console.log(event.target.value)
-    setNewUserRole(event.target.value);
-  };
+
   const handleSubmitInvite = async (event) => {
     event.preventDefault();
     try {
@@ -129,19 +99,17 @@ function EmployeePage() {
         },
       };
       const response = await axios.post(
-        `http://localhost:3000/organization/${orgId}/invite/${newUserRole}`,
+        `${process.env.REACT_APP_BASE_URL}/organization/${orgId}/invite/${newUser.role}`,
         {
-          name: newUserName,
-          email: newUserEmail,
-          role: newUserRole,
+          name: newUser.name,
+          email: newUser.email,
+          role: newUser.role,
         },
         config
       );
       setShowAddUserModal(false);
       fetchEmployeeList();
-      setNewUserName("");
-      setNewUserEmail("");
-      setNewUserRole("");
+      setNewUser({ name: "", email: "", role: "employee" });
     } catch (error) {
       console.error(error);
     }
@@ -211,7 +179,6 @@ function EmployeePage() {
             X
           </Button>
         </Modal.Header>
-
         <Modal.Body>
           <Form onSubmit={handleSubmitInvite}>
             <Form.Group>
@@ -219,25 +186,28 @@ function EmployeePage() {
               <Form.Control
                 type="text"
                 placeholder="Enter employee name"
-                value={newUserName}
-                onChange={handleNewUserNameChange}
+                name="name"
+                value={newUser.name}
+                onChange={handleNewUserChange}
               />
             </Form.Group>
-            <Form.Group >
+            <Form.Group>
               <Form.Label>Employee Email</Form.Label>
               <Form.Control
                 type="email"
                 placeholder="Enter employee email"
-                value={newUserEmail}
-                onChange={handleNewUserEmailChange}
+                name="email"
+                value={newUser.email}
+                onChange={handleNewUserChange}
               />
             </Form.Group>
-            <Form.Group >
+            <Form.Group>
               <Form.Label>Employee Role</Form.Label>
               <Form.Control
                 as="select"
-                value={newUserRole}
-                onChange={handleNewUserRoleChange}
+                name="role"
+                value={newUser.role}
+                onChange={handleNewUserChange}
               >
                 <option value="employee">Employee</option>
                 <option value="hrd">HRD</option>
@@ -254,91 +224,7 @@ function EmployeePage() {
           </Form>
         </Modal.Body>
       </Modal>
-
-      {/* Add Team Task Modal */}
-      {/* <Modal
-        show={showProfileModal}
-        onHide={() => setShowProfileModal(false)}
-      >
-        <Modal.Header>
-          <Modal.Title>
-            Add Task to {selectedEmployee?.name && <span>{selectedEmployee.name}</span>}
-          </Modal.Title>
-          <Button variant="text" onClick={() => setShowProfileModal(false)}>
-            X
-          </Button>
-        </Modal.Header>
-        <Modal.Body> */}
-          {/* <Form onSubmit={handleSubmitProfile}>
-            <Form.Group>
-              <Form.Label>Task</Form.Label>
-              <Form.Control
-                type="text"
-                placeholder="Enter task"
-                value={newTeamTask}
-                onChange={handleNewTeamTaskChange}
-              />
-            </Form.Group>
-            <Form.Group>
-              <Form.Label>Description</Form.Label>
-              <Form.Control
-                as="textarea"
-                placeholder="Enter task description"
-                value={newTaskDescription}
-                onChange={handleNewTaskDescriptionChange}
-              />
-            </Form.Group>
-            <Form.Group>
-              <Form.Label>Due Date and Time</Form.Label>
-              <Form.Control
-                type="datetime-local"
-                value={newTaskDueDateTime}
-                onChange={handleNewTaskDueDateTimeChange}
-              />
-            </Form.Group>
-            <Form.Group>
-              <Form.Label>Assign To</Form.Label>
-              <Select
-                options={teamMemberData}
-                placeholder="Select user"
-              />
-            </Form.Group>
-            <Form.Group>
-              <Form.Label>Priority</Form.Label>
-              <Form.Control
-                as="select"
-                value={newTaskPriority}
-                onChange={handleNewTaskPriorityChange}
-              >
-                <option value="Low">Low</option>
-                <option value="Medium">Medium</option>
-                <option value="High">High</option>
-              </Form.Control>
-            </Form.Group>
-            <Form.Group controlId="fileUpload">
-              <Form.Label>File Upload</Form.Label>
-              <Form.Control
-                type="file"
-                id="custom-file"
-                label="Choose file"
-                custom
-                multiple
-                onChange={handleNewFileUploadChange}
-                accept=".xlsx,.xls,.doc,.docx,.pdf,.zip,.rar,.ppt,.pptx"
-              />
-            </Form.Group>
-            <Button
-              style={{ marginTop: "10px" }}
-              variant="primary"
-              type="submit"
-            >
-              Submit
-            </Button>
-          </Form> */}
-        {/* </Modal.Body>
-      </Modal> */}
     </div>
   );
 }
-
 export default EmployeePage;

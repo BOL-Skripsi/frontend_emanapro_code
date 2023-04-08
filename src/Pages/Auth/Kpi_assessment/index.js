@@ -51,7 +51,7 @@ function EmployeePage() {
       : "NOT STARTED";
     return tanggal;
   };
-  const fetchKpiData = async () => {
+  const fetchKpiData = async (userId) => {
     try {
       // const orgId = "71152531-e247-467f-8839-b78c14d7f71e";
       const config = {
@@ -60,7 +60,11 @@ function EmployeePage() {
         },
       };
       const response = await axios.get(
+<<<<<<< Updated upstream
         `http://localhost:3000/kpi/open/${userId}`,
+=======
+        `${process.env.REACT_APP_BASE_URL}/kpi/open/${userId}`,
+>>>>>>> Stashed changes
         config
       );
       setKpiData(response.data);
@@ -77,7 +81,7 @@ function EmployeePage() {
         },
       };
       const response = await axios.get(
-        `http://localhost:3000/kpi/open/${userId}/${duedateId}/list`,
+        `${process.env.REACT_APP_BASE_URL}/kpi/open/${userId}/${duedateId}/list`,
         config
       );
       setKpiTeamData(response.data);
@@ -95,7 +99,7 @@ function EmployeePage() {
         },
       };
       const response = await axios.get(
-        `http://localhost:3000/kpi/open/${userId}/${duedateId}/${category}/form`,
+        `${process.env.REACT_APP_BASE_URL}/kpi/open/${userId}/${duedateId}/${category}/form`,
         config
       );
       setKpiCategoryTeamData(response.data);
@@ -105,7 +109,7 @@ function EmployeePage() {
   };
 
   useEffect(() => {
-    fetchKpiData();
+    fetchKpiData(userId);
   }, []);
 
   const handleMemberKpiClick = (row) => {
@@ -161,7 +165,7 @@ function EmployeePage() {
         },
       };
       const response = await axios.post(
-        `http://localhost:3000/kpi/period`,
+        `${process.env.REACT_APP_BASE_URL}/kpi/period`,
         {
           kpi_duedate: newPeriod,
         },

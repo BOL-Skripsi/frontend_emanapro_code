@@ -33,7 +33,7 @@ function RubricPage() {
         },
       };
       const response = await axios.get(
-        `http://localhost:3000/team/${orgId}/${userId}/rubric`,
+        `${process.env.REACT_APP_BASE_URL}/team/${orgId}/${userId}/rubric`,
         config
       );
       setTeamData(response.data.teams);
@@ -50,7 +50,7 @@ function RubricPage() {
         },
       };
       const response = await axios.get(
-        `http://localhost:3000/rubric/${orgId}/${team_uuid}/list`,
+        `${process.env.REACT_APP_BASE_URL}/rubric/${orgId}/${team_uuid}/list`,
         config
       );
       console.log(response.data?.competencyRubrics);
@@ -363,7 +363,7 @@ function RubricPage() {
         },
       };
       const response = await axios.post(
-        `http://localhost:3000/rubric/`,
+        `${process.env.REACT_APP_BASE_URL}/rubric/`,
         {
           category: newAssessmentCategory,
           metric: newAssessmentMetric,

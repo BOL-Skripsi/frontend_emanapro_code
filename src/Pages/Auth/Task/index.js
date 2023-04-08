@@ -55,7 +55,7 @@ function TaskPage() {
         },
       };
       const response = await axios.get(
-        `http://localhost:3000/team/${userId}/me`,
+        `${process.env.REACT_APP_BASE_URL}/team/${userId}/me`,
         config
       );
       console.log(response.data.team);
@@ -73,7 +73,7 @@ function TaskPage() {
         },
       };
       const response = await axios.get(
-        `http://localhost:3000/task/${userId}/personal`,
+        `${process.env.REACT_APP_BASE_URL}/task/${userId}/personal`,
         config
       );
       setPersonalTasks(response.data);
@@ -90,7 +90,7 @@ function TaskPage() {
         },
       };
       const response = await axios.get(
-        `http://localhost:3000/task/reply/${taskId}`,
+        `${process.env.REACT_APP_BASE_URL}/task/reply/${taskId}`,
         config
       );
       setTaskReply(response.data);
@@ -109,7 +109,7 @@ function TaskPage() {
         },
       };
       const response = await axios.get(
-        `http://localhost:3000/task/${teamId}/team`,
+        `${process.env.REACT_APP_BASE_URL}/task/${teamId}/team`,
         config
       );
       setPersonalTasks(response.data);
@@ -126,7 +126,7 @@ function TaskPage() {
         },
       };
       const response = await axios.get(
-        `http://localhost:3000/task/${taskId}`,
+        `${process.env.REACT_APP_BASE_URL}/task/${taskId}`,
         config
       );
       setDetailTasks(response.data);
@@ -143,7 +143,7 @@ function TaskPage() {
         },
       };
       const response = await axios.get(
-        `http://localhost:3000/task/${taskId}/file`,
+        `${process.env.REACT_APP_BASE_URL}/task/${taskId}/file`,
         config
       );
       setDetailTasksFile(response.data);
@@ -320,7 +320,7 @@ function TaskPage() {
       formData.append("assign_to", userId);
       formData.append("status", "proposed");
       formData.append("file", newTaskFile);
-      await axios.post("http://localhost:3000/task/personal", formData, config);
+      await axios.post(`${process.env.REACT_APP_BASE_URL}/task/personal`, formData, config);
       fetchPersonalTasks();
       setNewTask("");
       setNewTaskDescription("");
@@ -336,7 +336,7 @@ function TaskPage() {
   const handleSubmitTeamTask = async (event) => {
     event.preventDefault();
     try {
-      await axios.post(`http://localhost:3000/tasks/${userId}`);
+      await axios.post(`${process.env.REACT_APP_BASE_URL}/tasks/${userId}`);
       fetchPersonalTasks();
     } catch (error) {
       console.error(error);
@@ -358,7 +358,7 @@ function TaskPage() {
         currentDate.getHours().toString().padStart(2, "0") +
         ":" +
         currentDate.getMinutes().toString().padStart(2, "0");
-      await axios.put(`http://localhost:3000/task/${userId}/${taskId}/start`, {
+      await axios.put(`${process.env.REACT_APP_BASE_URL}/task/${userId}/${taskId}/start`, {
         start_time: isoDate,
       });
       fetchPersonalTasks();
@@ -382,7 +382,7 @@ function TaskPage() {
       formData.append("description", newTaskReplyDescription);
       formData.append("file", newTaskReplyFile);
       await axios.post(
-        `http://localhost:3000/task/${userId}/${taskId}/reply`,
+        `${process.env.REACT_APP_BASE_URL}/task/${userId}/${taskId}/reply`,
         formData,
         config
       );
@@ -398,7 +398,7 @@ function TaskPage() {
   const downloadFile = async (filename) => {
     try {
       const response = await axios.get(
-        `http://localhost:3000/task/download/${filename}`,
+        `${process.env.REACT_APP_BASE_URL}/task/download/${filename}`,
         {
           responseType: "blob",
         }

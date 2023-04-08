@@ -37,7 +37,7 @@ function TeamPage() {
         },
       };
       const response = await axios.get(
-        `http://localhost:3000/team/${orgId}/list`,
+        `${process.env.REACT_APP_BASE_URL}/team/${orgId}/list`,
         config
       );
       setTeamData(response.data.teams);
@@ -54,7 +54,7 @@ function TeamPage() {
         },
       };
       const response = await axios.get(
-        `http://localhost:3000/team/avaliable`,
+        `${process.env.REACT_APP_BASE_URL}/team/avaliable`,
         config
       );
       const transformedData = response.data.teams.map((item) => ({
@@ -75,7 +75,7 @@ function TeamPage() {
         },
       };
       const response = await axios.get(
-        `http://localhost:3000/team/${teamId}/member`,
+        `${process.env.REACT_APP_BASE_URL}/team/${teamId}/member`,
         config
       );
       const transformedData = response.data.teams.map((item) => ({
@@ -96,7 +96,7 @@ function TeamPage() {
         },
       };
       const response = await axios.get(
-        `http://localhost:3000/team/${teamId.uuid}/member/list`,
+        `${process.env.REACT_APP_BASE_URL}/team/${teamId.uuid}/member/list`,
         config
       );
       setThisTeamMember(response.data.teams);
@@ -251,7 +251,7 @@ function TeamPage() {
         },
       };
       const response = await axios.post(
-        `http://localhost:3000/team/${orgId}/`,
+        `${process.env.REACT_APP_BASE_URL}/team/${orgId}/`,
         {
           name: newTeamName,
           description: newTeamDescription,
@@ -284,7 +284,7 @@ function TeamPage() {
         },
       };
       const response = await axios.post(
-        `http://localhost:3000/team/${orgId}/task/${teamId}/add`,
+        `${process.env.REACT_APP_BASE_URL}/team/${orgId}/task/${teamId}/add`,
         {
           task: newTeamTask,
           description: newTaskDescription,
@@ -325,7 +325,7 @@ function TeamPage() {
         },
       };
       const response = await axios.post(
-        `http://localhost:3000/team/${orgId}/newmember`,
+        `${process.env.REACT_APP_BASE_URL}/team/${orgId}/newmember`,
         {
           user_id: newTeamMemberName,
           team_id: teamId,

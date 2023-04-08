@@ -45,7 +45,7 @@ function TaskPage() {
         },
       };
       const response = await axios.get(
-        `http://localhost:3000/team/${teamId}/member/list`,
+        `${process.env.REACT_APP_BASE_URL}/team/${teamId}/member/list`,
         config
       );
       console.log(response.data.teams)
@@ -65,7 +65,7 @@ function TaskPage() {
         },
       };
       const response = await axios.get(
-        `http://localhost:3000/task/${teamId}/team`,
+        `${process.env.REACT_APP_BASE_URL}/task/${teamId}/team`,
         config
       );
       setTeamTasks(response.data);

@@ -67,7 +67,7 @@ function TaskPage() {
         },
       };
       const response = await axios.get(
-        `http://localhost:3000/team/${userId}/myjuridiction`,
+        `${process.env.REACT_APP_BASE_URL}/team/${userId}/myjuridiction`,
         config
       );
       const groupedOptions = response.data.reduce((acc, curr) => {
@@ -96,7 +96,7 @@ function TaskPage() {
         },
       };
       const response = await axios.get(
-        `http://localhost:3000/task/${userId}/personal/manager`,
+        `${process.env.REACT_APP_BASE_URL}/task/${userId}/personal/manager`,
         config
       );
       console.log(response.data);
@@ -114,7 +114,7 @@ function TaskPage() {
         },
       };
       const response = await axios.get(
-        `http://localhost:3000/task/${userId}/team/manager`,
+        `${process.env.REACT_APP_BASE_URL}/task/${userId}/team/manager`,
         config
       );
       console.log(response.data);
@@ -132,7 +132,7 @@ function TaskPage() {
         },
       };
       const response = await axios.get(
-        `http://localhost:3000/task/reply/${taskId}`,
+        `${process.env.REACT_APP_BASE_URL}/task/reply/${taskId}`,
         config
       );
       setTaskReply(response.data);
@@ -149,7 +149,7 @@ function TaskPage() {
         },
       };
       const response = await axios.post(
-        `http://localhost:3000/task/team/reply`,{
+        `${process.env.REACT_APP_BASE_URL}/task/team/reply`,{
           attachment_name : taskInfo.attachment_name,
           description : taskInfo.description,
           due_datetime : taskInfo.due_datetime,
@@ -173,7 +173,7 @@ function TaskPage() {
         },
       };
       const response = await axios.get(
-        `http://localhost:3000/task/${taskId}`,
+        `${process.env.REACT_APP_BASE_URL}/task/${taskId}`,
         config
       );
       setDetailTasks(response.data);
@@ -190,7 +190,7 @@ function TaskPage() {
         },
       };
       const response = await axios.get(
-        `http://localhost:3000/task/${taskId}/file`,
+        `${process.env.REACT_APP_BASE_URL}/task/${taskId}/file`,
         config
       );
       setDetailTasksFile(response.data);
@@ -488,7 +488,7 @@ function TaskPage() {
       formData.append("status", "approve");
       formData.append("file", newTaskFile);
       console.log(formData);
-      await axios.post("http://localhost:3000/task/personal", formData, config);
+      await axios.post(`${process.env.REACT_APP_BASE_URL}/task/personal`, formData, config);
       fetchMyJuridictionPersonalTasks();
       setShowAddTaskModal(false);
       setNewTask("");
@@ -514,7 +514,7 @@ function TaskPage() {
     event.preventDefault();
     try {
       await axios.put(
-        `http://localhost:3000/task/${selectedTask.uuid}/approval`,
+        `${process.env.REACT_APP_BASE_URL}/task/${selectedTask.uuid}/approval`,
         {
           comment: newComment,
           status: newStatus,
@@ -547,7 +547,7 @@ function TaskPage() {
       formData.append("assign_to", JSON.stringify(newTaskAssignTo));
       formData.append("status", "approve");
       formData.append("file", newTaskFile);
-      await axios.post("http://localhost:3000/task/team", formData, config);
+      await axios.post(`${process.env.REACT_APP_BASE_URL}/task/team`, formData, config);
       fetchMyJuridictionPersonalTasks();
       setShowAddTeamTaskModal(false);
       setNewTask("");
@@ -566,7 +566,7 @@ function TaskPage() {
     try {
       console.log(newComment);
       const taskId = selectedTask.uuid;
-      await axios.put(`http://localhost:3000/task/${taskId}/manager_reply`, {
+      await axios.put(`${process.env.REACT_APP_BASE_URL}/task/${taskId}/manager_reply`, {
         description: newComment,
         status: newStatus,
       });
@@ -582,7 +582,7 @@ function TaskPage() {
   const downloadFile = async (filename) => {
     try {
       const response = await axios.get(
-        `http://localhost:3000/task/download/${filename}`,
+        `${process.env.REACT_APP_BASE_URL}/task/download/${filename}`,
         {
           responseType: "blob",
         }

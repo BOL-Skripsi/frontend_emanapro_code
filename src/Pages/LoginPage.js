@@ -3,19 +3,31 @@ import axios from "axios";
 import { useSignIn } from "react-auth-kit";
 import { useNavigate } from "react-router-dom";
 
-function Login({ onLogin }) {
+function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
   const signIn = useSignIn();
+  const [error, setError] = useState("");
+
   const handleSubmit = async (event) => {
     event.preventDefault();
     try {
+<<<<<<< Updated upstream
       console.log(process.env.REACT_APP_BASE)
       const response = await axios.post(`http://localhost:3000/auth/login`, {
         email: email,
         password: password,
       });
+=======
+      const response = await axios.post(
+        `${process.env.REACT_APP_BASE_URL}/auth/login`,
+        {
+          email: email,
+          password: password,
+        }
+      );
+>>>>>>> Stashed changes
       console.log(response.data);
 
       signIn({
@@ -25,17 +37,20 @@ function Login({ onLogin }) {
         authState: {
           userId: response.data.user.id,
           userUuid: response.data.user.uuid,
-          userChange: response.data.user.change_password
+          userChange: response.data.user.change_password,
         },
       });
       navigate("/");
     } catch (error) {
       console.error(error);
+      setError("Invalid email or password");
     }
   };
+
   function handleRegister() {
     navigate("/register");
   }
+
   function handleForgot() {
     navigate("/forgot");
   }
@@ -54,6 +69,7 @@ function Login({ onLogin }) {
         {/* /.login-logo */}
         <div className="card">
           <div className="card-body login-card-body">
+            {error && <div className="alert alert-danger">{error}</div>}
             <p className="login-box-msg">Sign in to start your session</p>
             <form onSubmit={handleSubmit}>
               <div className="input-group mb-3">

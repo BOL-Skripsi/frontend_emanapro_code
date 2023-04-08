@@ -49,7 +49,7 @@ function TaskPage() {
         },
       };
       const response = await axios.get(
-        `http://localhost:3000/task/${userId}/personal`,
+        `${process.env.REACT_APP_BASE_URL}/task/${userId}/personal`,
         config
       );
       setPersonalTasks(response.data);
@@ -66,7 +66,7 @@ function TaskPage() {
         },
       };
       const response = await axios.get(
-        `http://localhost:3000/task/${taskId}`,
+        `${process.env.REACT_APP_BASE_URL}/task/${taskId}`,
         config
       );
       setDetailTasks(response.data);
@@ -83,7 +83,7 @@ function TaskPage() {
         },
       };
       const response = await axios.get(
-        `http://localhost:3000/task/${taskId}/file`,
+        `${process.env.REACT_APP_BASE_URL}/task/${taskId}/file`,
         config
       );
       setDetailTasksFile(response.data);
@@ -248,7 +248,7 @@ function TaskPage() {
   const downloadFile = async (filename) => {
     try {
       const response = await axios.get(
-        `http://localhost:3000/task/download/${filename}`,
+        `${process.env.REACT_APP_BASE_URL}/task/download/${filename}`,
         {
           responseType: "blob",
         }
