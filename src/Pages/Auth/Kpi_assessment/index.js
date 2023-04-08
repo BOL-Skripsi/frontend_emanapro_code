@@ -60,11 +60,7 @@ function EmployeePage() {
         },
       };
       const response = await axios.get(
-<<<<<<< Updated upstream
-        `http://localhost:3000/kpi/open/${userId}`,
-=======
         `${process.env.REACT_APP_BASE_URL}/kpi/open/${userId}`,
->>>>>>> Stashed changes
         config
       );
       setKpiData(response.data);
