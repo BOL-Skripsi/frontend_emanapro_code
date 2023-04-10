@@ -3,11 +3,22 @@ import { NavLink } from "react-router-dom";
 import axios from "axios";
 import { useAuthUser } from "react-auth-kit";
 import Cookies from "js-cookie";
+import ReactSpeedometer from "react-d3-speedometer";
+import Select from "react-select";
+
 const Home = () => {
+  const periods = [
+    { value: "Q1 2023", label: "Q1 2023" },
+    { value: "Q2 2023", label: "Q2 2023" },
+    { value: "Q3 2023", label: "Q3 2023" },
+    { value: "Q4 2023", label: "Q4 2023" },
+  ];
   const auth = useAuthUser();
   const userId = auth().userUuid;
   const [roles, setRoles] = useState([]);
   const [activeLink, setActiveLink] = useState("");
+  const [period, setPeriod] = useState(periods[0]);
+  const [score, setScore] = useState(3);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -56,7 +67,7 @@ const Home = () => {
   const renderManagerCard = () => {
     return (
       <div className="row">
-        {/* <div className="col-lg-8">
+        <div className="col-lg-6">
           <div className="card">
             <div className="card-header">
               <h3 className="card-title">Task List To Approve</h3>
@@ -81,44 +92,72 @@ const Home = () => {
             </div>
           </div>
         </div>
-        <div className="col-lg-4">
-          <div className="card">
-            <div className="card-header">
-              <h3 className="card-title">News</h3>
-            </div>
-            <div className="card-body">
-              <p className="card-text">HRD Has Set New Period For KPI</p>
-              <a
-                href="#"
-                className="btn btn-primary"
-                target="_blank"
-                rel="noreferrer"
-              >
-                Learn More
-              </a>
-            </div>
-          </div>
-        </div> */}
       </div>
     );
   };
 
   const renderEmployeeCard = () => {
+    const handlePeriodChange = (selectedOption) => {
+      setPeriod(selectedOption);
+      setScore(Math.floor(Math.random() * 5) + 1);
+    };
+
     return (
-      <div className="col-lg-6">
-        <div className="card">
-          <div className="card-header">
-            <h3 className="card-title">Completed Tasks</h3>
+      <div className="row">
+        <div className="col-lg-3">
+          <div className="card">
+            <div className="card-header d-flex justify-content-between align-items-center"  style={{ height: "60px" }}>
+              <h3 className="card-title">Your Performance Score</h3>
+              <Select
+                value={period}
+                onChange={handlePeriodChange}
+                options={periods}
+              />
+            </div>
+
+            <div className="card-body text-center" style={{ height: "250px" }}>
+              <ReactSpeedometer
+                maxValue={5}
+                width={250}
+                value={score}
+                needleHeightRatio={0.7}
+                valueFormat=".2"
+                needleColor="black"
+                segments={5}
+                segmentColors={[
+                  "#ff0000",
+                  "#ffa700",
+                  "#fff400",
+                  "#a3ff00",
+                  "#2cba00",
+                ]}
+              />
+            </div>
           </div>
-          <div className="card-body">
-            <p>View your completed tasks and progress.</p>
-            <NavLink
-              to="/completed-tasks"
-              className="btn btn-primary"
-              activeClassName="active"
-            >
-              View Completed Tasks
-            </NavLink>
+        </div>
+        <div className="col-lg-9">
+          <div className="card">
+            <div  className="card-header d-flex justify-content-between align-items-center" style={{ height: "60px" }}>
+              <h3 className="card-title">News & Notification</h3>
+            </div>
+            <div className="card-body" style={{ height: "250px" }}></div>
+          </div>
+        </div>
+        <div className="col-lg-12">
+          <div className="card">
+            <div className="card-header">
+              <h3 className="card-title">My Tasks</h3>
+            </div>
+            <div className="card-body">
+              <p>View your completed tasks and progress.</p>
+              <NavLink
+                to="/completed-tasks"
+                className="btn btn-primary"
+                activeClassName="active"
+              >
+                View Completed Tasks
+              </NavLink>
+            </div>
           </div>
         </div>
       </div>
@@ -126,45 +165,52 @@ const Home = () => {
   };
 
   return (
-    <div>
-      <div className="content-wrapper">
-        {/* Content Header (Page header) */}
-        <div className="content-header">
-          <div className="container-fluid">
-            <div className="row mb-2">
-              <div className="col-sm-6">
-                <h1 className="m-0">Dashboard</h1>
-              </div>
-              {/* /.col */}
-              <div className="col-sm-6">
-                <ol className="breadcrumb float-sm-right">
-                  <li className="breadcrumb-item">
-                    <a href="#">Home</a>
-                  </li>
-                  <li className="breadcrumb-item active">Dashboard</li>
-                </ol>
-              </div>
-              {/* /.col */}
+    <div className="content-wrapper">
+      {/* Content Header (Page header) */}
+      <div className="content-header">
+        <div className="container-fluid">
+          <div className="row mb-2">
+            <div className="col-sm-6">
+              <h1 className="m-0">Dashboard</h1>
             </div>
-            {/* /.row */}
+            {/* /.col */}
+            <div className="col-sm-6">
+              <ol className="breadcrumb float-sm-right">
+                <li className="breadcrumb-item">
+                  <a href="#">Home</a>
+                </li>
+                <li className="breadcrumb-item active">Dashboard</li>
+              </ol>
+            </div>
+            {/* /.col */}
           </div>
-          {/* /.container-fluid */}
+          {/* /.row */}
         </div>
-        {/* /.content-header */}
-        {/* Main content */}
-        <section className="content">
-          <div className="container-fluid">
-            {/* Small boxes (Stat box) */}
-            <div className="row">
-              {roles.organization_role === "manager" && renderManagerCard()}
-              {roles.organization_role === "employee" && renderEmployeeCard()}
-            </div>
-            {/* /.row (main row) */}
-          </div>
-          {/* /.container-fluid */}
-        </section>
-        {/* /.content */}
+        {/* /.container-fluid */}
       </div>
+      {/* /.content-header */}
+      {/* Main content */}
+      <section className="content">
+        <div className="container-fluid">
+          <div className="row">
+            <div className="col-md-12">
+              <div className="card">
+                {/* <div className="card-header">
+                  <div className="card-tools">
+                    <div>
+                    </div>
+                  </div>
+                </div> */}
+                <div className="card-body">
+                  {roles.organization_role === "manager" && renderManagerCard()}
+                  {roles.organization_role === "employee" &&
+                    renderEmployeeCard()}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
   );
 };

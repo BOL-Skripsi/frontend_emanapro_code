@@ -1129,7 +1129,7 @@ function TaskPage() {
                 </table>
               </Form>
             </div>
-          ) : detailTasks.status === "approve" ? (
+          ) : detailTasks.status === "proposed" ? (
             <div className="card-body">
               <Form onSubmit={handleSubmitApproval}>
                 <h5>Task Approval</h5>

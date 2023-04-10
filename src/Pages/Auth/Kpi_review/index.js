@@ -7,6 +7,13 @@ import Select from "react-select";
 import DataTable from "react-data-table-component";
 
 function EmployeePage() {
+  const periods = [
+    { value: "Q1 2023", label: "Q1 2023" },
+    { value: "Q2 2023", label: "Q2 2023" },
+    { value: "Q3 2023", label: "Q3 2023" },
+    { value: "Q4 2023", label: "Q4 2023" },
+  ];
+
   const [kpiData, setKpiData] = useState([]);
   const [kpiTeamData, setKpiTeamData] = useState([]);
   const [newPeriod, setNewPeriod] = useState("");
@@ -17,6 +24,7 @@ function EmployeePage() {
   const [showAddKpiModal, setShowAddKpiModal] = useState(false);
   const [showUpdateKpiModal, setShowUpdateKpiModal] = useState(false);
   const [selectedRubric, setSelectedRubric] = useState(null);
+  const [period, setPeriod] = useState(periods[0]);
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -37,11 +45,6 @@ function EmployeePage() {
     { value: "Q2 " + year, label: "Q2 " + year },
     { value: "Q3 " + year, label: "Q3 " + year },
     { value: "Q4 " + year, label: "Q4 " + year },
-    { value: "Year " + year.toString(), label: "Year " + year.toString() },
-    {
-      value: "Year " + (year - 1).toString(),
-      label: "Year " + (year - 1).toString(),
-    },
   ];
   const fetchKpiData = async () => {
     try {
@@ -51,7 +54,10 @@ function EmployeePage() {
           Authorization: `Bearer ${Cookies.get("_auth")}`,
         },
       };
-      const response = await axios.get(`${process.env.REACT_APP_BASE_URL}/kpi/`, config);
+      const response = await axios.get(
+        `${process.env.REACT_APP_BASE_URL}/kpi/`,
+        config
+      );
       setKpiData(response.data);
     } catch (error) {
       console.error(error);
@@ -76,10 +82,31 @@ function EmployeePage() {
     }
   };
 
+  const fetchKpiAssessmentData = async (data) => {
+    try {
+      console.log(data);
+      // const config = {
+      //   headers: {
+      //     Authorization: `Bearer ${Cookies.get("_auth")}`,
+      //   },
+      // };
+      // const response = await axios.get(
+      //   `${process.env.REACT_APP_BASE_URL}/kpi/kpi_team_member/${teamId}`,
+      //   config
+      // );
+      // setKpiTeamData(response.data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   useEffect(() => {
     fetchKpiData();
   }, []);
 
+  const handlePeriodChange = (selectedOption) => {
+    setPeriod(selectedOption);
+  };
   const handleMemberKpiClick = (row) => {
     setSelectedRubric(row);
     console.log(row);
@@ -89,6 +116,7 @@ function EmployeePage() {
   const handleDetailKpiClick = (row) => {
     setSelectedRubric(row);
     fetchKpiTeamData(row.team_uuid);
+    fetchKpiAssessmentData(row);
     setShowDetailKpiModal(true);
   };
 
@@ -129,7 +157,7 @@ function EmployeePage() {
           kpi_period: newPeriod,
           kpi_startdate: newStartDate,
           kpi_duedate: newDueDate,
-        },
+        }
       );
       setShowAddKpiModal(false);
       setNewPeriod("");
@@ -148,8 +176,9 @@ function EmployeePage() {
         },
       };
       const response = await axios.post(
-        `${process.env.REACT_APP_BASE_URL}/kpi/period/update`, {
-          kpi_period: newPeriod
+        `${process.env.REACT_APP_BASE_URL}/kpi/period/update`,
+        {
+          kpi_period: newPeriod,
         },
         config
       );
@@ -181,6 +210,16 @@ function EmployeePage() {
           <div>{`${row.num_members} Member / ${row.num_assessed} Assess`}</div>
         </>
       ),
+    },
+    {
+      name: "KPI Period",
+      selector: "kpi_period",
+      sortable: true,
+    },
+    {
+      name: "Team KPI Score",
+      selector: "final_score",
+      sortable: true,
     },
     {
       name: "Assessment Due Date",
@@ -232,6 +271,11 @@ function EmployeePage() {
           <div>{`${row.assessment_count} / ${row.rubric_count} Assessment`}</div>
         </>
       ),
+    },
+    {
+      name: "Final Score",
+      selector: "final_score",
+      sortable: true,
     },
     {
       name: "Action",
@@ -304,23 +348,33 @@ function EmployeePage() {
             <div className="col-md-12">
               <div className="card">
                 <div className="card-header">
-                  <div className="card-tools">
+                  <div className="card-tools d-flex">
                     <div>
                       <button
                         className="btn btn-primary mr-2"
                         onClick={handleAddKpiClick}
+                        style={{ flex: "1", marginRight: "10px" }}
                       >
                         + Add KPI Period
                       </button>
-                      <button
-                        className="btn btn-primary mr-2"
-                        onClick={handleUpdateKpiClick}
-                      >
-                        + Update KPI Assessment
-                      </button>
+                      </div>
+                      <div>
+                      <Select
+                        value={period}
+                        onChange={handlePeriodChange}
+                        options={periods}
+                        style={{ flex: "2" }}
+                      />
                     </div>
+                    {/* <button
+      className="btn btn-primary mr-2"
+      onClick={handleUpdateKpiClick}
+    >
+      + Update KPI Assessment
+    </button> */}
                   </div>
                 </div>
+
                 <div className="card-body">
                   <DataTable
                     columns={columns}
@@ -442,8 +496,8 @@ function EmployeePage() {
         <Modal.Header>
           <Modal.Title>
             {" "}
-            {selectedRubric?.name && (
-              <span>{selectedRubric.name} Assessment Progress</span>
+            {selectedRubric?.user_name && (
+              <span>{selectedRubric.user_name} Assessment Detail</span>
             )}
           </Modal.Title>
           <Button variant="text" onClick={() => setShowMemberKpiModal(false)}>
@@ -451,9 +505,13 @@ function EmployeePage() {
           </Button>
         </Modal.Header>
         <Modal.Body>
-          <p>
-            asdjalksdjlakjsdlakjsdlakjsdlkajsdlkajsdlkajsdlkajsdlkajsdlkajsdlkajsdlkajsdlkajsdlkjakdsjlakjsdlakjsdlk
-          </p>
+          <DataTable
+            columns={columns}
+            data={kpiData}
+            noHeader
+            pagination
+            customStyles={customStyles}
+          />
         </Modal.Body>
       </Modal>
     </div>

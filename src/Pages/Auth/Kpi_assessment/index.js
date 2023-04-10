@@ -307,9 +307,7 @@ function EmployeePage() {
       sortable: true,
       cell: (row) => (
         <>
-          <div>
-            {row.final_score}
-          </div>
+          <div>{row.final_score}</div>
         </>
       ),
     },
@@ -424,21 +422,13 @@ function EmployeePage() {
       name: "Tracking Source",
       selector: "data_source",
       sortable: true,
-      cell: (row) => (
-        <div>
-          {row.data_source}
-        </div>
-      ),
+      cell: (row) => <div>{row.data_source}</div>,
     },
     {
       name: "Description of performance results",
       selector: "uraian_kinerja",
       sortable: true,
-      cell: (row) => (
-        <div>
-          {row.uraian_kinerja}
-        </div>
-      ),
+      cell: (row) => <div>{row.uraian_kinerja}</div>,
     },
     {
       name: "Score",
@@ -640,6 +630,13 @@ function EmployeePage() {
           <div className="row">
             <div className="col-md-12">
               <div className="card">
+                <div className="card-header">
+                  <div className="card-tools">
+                    <div>
+                      PERIOD
+                    </div>
+                  </div>
+                </div>
                 <div className="card-body">
                   <DataTable
                     columns={columns}

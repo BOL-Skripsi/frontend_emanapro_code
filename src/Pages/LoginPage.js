@@ -13,13 +13,6 @@ function Login() {
   const handleSubmit = async (event) => {
     event.preventDefault();
     try {
-<<<<<<< Updated upstream
-      console.log(process.env.REACT_APP_BASE)
-      const response = await axios.post(`http://localhost:3000/auth/login`, {
-        email: email,
-        password: password,
-      });
-=======
       const response = await axios.post(
         `${process.env.REACT_APP_BASE_URL}/auth/login`,
         {
@@ -27,12 +20,11 @@ function Login() {
           password: password,
         }
       );
->>>>>>> Stashed changes
       console.log(response.data);
 
       signIn({
         token: response.data.token,
-        expiresIn: 3600,
+        expiresIn: 36000,
         tokenType: "Bearer",
         authState: {
           userId: response.data.user.id,

@@ -840,8 +840,7 @@ function TaskPage() {
                         </tr>
                       )}
                       {taskReply[Object.keys(taskReply).length - 1]
-                        ?.reply_status !== "complete" && taskReply[Object.keys(taskReply).length - 1]
-                        ?.reply_status ? (
+                        ?.reply_status !== "complete"  ? (
                         <>
                           <tr>
                             <td
