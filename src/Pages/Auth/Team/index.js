@@ -39,13 +39,14 @@ function TaskPage() {
   const fetchTeamMember = async (team) => {
     try {
       const teamId = team.team_id;
+      // console.log(teamId);
       const config = {
         headers: {
           Authorization: `Bearer ${Cookies.get("_auth")}`,
         },
       };
       const response = await axios.get(
-        `${process.env.REACT_APP_BASE_URL}/team/${teamId}/member/list`,
+        `${process.env.REACT_APP_BASE_URL}/team/${teamId}/${teamId}/member/list`,
         config
       );
       console.log(response.data.teams)
@@ -82,11 +83,6 @@ function TaskPage() {
     {
       name: "Team Member Name",
       selector: "name",
-      sortable: true,
-    },
-    {
-      name: "Task Done",
-      selector: "completed_tasks",
       sortable: true,
     },
     {
@@ -182,7 +178,7 @@ function TaskPage() {
                 </div>
               </div>
             </Tab>
-              <Tab eventKey="team" title="Team Task">
+              {/* <Tab eventKey="team" title="Team Task">
                 <div className="row">
                   <div className="col-md-12">
                     <div className="card">
@@ -198,7 +194,7 @@ function TaskPage() {
                     </div>
                   </div>
                 </div>
-              </Tab>
+              </Tab> */}
           </Tabs>
         </div>
       </section>

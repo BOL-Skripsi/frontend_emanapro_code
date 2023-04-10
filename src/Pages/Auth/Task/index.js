@@ -174,10 +174,21 @@ function TaskPage() {
       sortable: true,
       cell: (row) => (
         <>
-          <div>
+          <div style={{ fontSize: "16px" }}>
             {row.priority ? (
-              <Badge pill variant="primary" className="p-1" size="lg">
-                {row.priority}
+              <Badge
+                pill
+                bg={
+                  row.priority === "High"
+                    ? "danger"
+                    : row.priority === "Medium"
+                    ? "warning"
+                    : "info"
+                }
+                className="p-1"
+                size="lg"
+              >
+                <strong>{row.priority}</strong>
               </Badge>
             ) : (
               ""
@@ -222,7 +233,20 @@ function TaskPage() {
       sortable: true,
       cell: (row) => (
         <>
-          <div>{row.status?.toUpperCase()}</div>
+          <div style={{ fontSize: "16px" }}>
+            {row.status ? (
+              <Badge
+                pill
+                bg={row.status === "not approve" ? "danger" : "info"}
+                className="p-1"
+                size="lg"
+              >
+                <strong>{row.status?.toUpperCase()}</strong>
+              </Badge>
+            ) : (
+              ""
+            )}
+          </div>
         </>
       ),
     },
@@ -232,7 +256,26 @@ function TaskPage() {
       sortable: true,
       cell: (row) => (
         <>
-          <div>{row.last_reply_status?.toUpperCase()}</div>
+          <div style={{ fontSize: "16px" }}>
+            {row.priority ? (
+              <Badge
+                pill
+                bg={
+                  row.last_reply_status === "Not Started"
+                    ? "secondary"
+                    : row.last_reply_status === "No Reply"
+                    ? "warning"
+                    : "success"
+                }
+                className="p-1"
+                size="lg"
+              >
+                <strong>{row.last_reply_status?.toUpperCase()}</strong>
+              </Badge>
+            ) : (
+              ""
+            )}
+          </div>
         </>
       ),
     },

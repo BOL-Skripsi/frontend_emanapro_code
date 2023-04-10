@@ -37,7 +37,7 @@ function TeamPage() {
         },
       };
       const response = await axios.get(
-        `${process.env.REACT_APP_BASE_URL}/team/${orgId}/list`,
+        `${process.env.REACT_APP_BASE_URL}/team/${orgId}/${userId}/list`,
         config
       );
       setTeamData(response.data.teams);

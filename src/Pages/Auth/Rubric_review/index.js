@@ -21,7 +21,10 @@ function RubricPage() {
           Authorization: `Bearer ${Cookies.get("_auth")}`,
         },
       };
-      const response = await axios.get(`${process.env.REACT_APP_BASE_URL}/rubric/`, config);
+      const response = await axios.get(
+        `${process.env.REACT_APP_BASE_URL}/rubric/`,
+        config
+      );
       setRubricData(response.data);
     } catch (error) {
       console.error(error);
@@ -68,15 +71,13 @@ function RubricPage() {
       name: "Action",
       cell: (row) => (
         <>
-          {row.status_approval !== "approve" && (
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={() => handleDetailRubricClick(row)}
-            >
-              Detail
-            </Button>
-          )}
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={() => handleDetailRubricClick(row)}
+          >
+            Detail
+          </Button>
         </>
       ),
       button: true,
@@ -221,19 +222,27 @@ function RubricPage() {
               <tbody>
                 <tr>
                   <th style={{ verticalAlign: "top" }}>Rubric Category</th>
-                  <td style={{ verticalAlign: "top" }}>{selectedRubric?.category}</td>
+                  <td style={{ verticalAlign: "top" }}>
+                    {selectedRubric?.category}
+                  </td>
                 </tr>
                 <tr>
                   <th style={{ verticalAlign: "top" }}>Performance Metric</th>
-                  <td style={{ verticalAlign: "top" }}>{selectedRubric?.performance_metric}</td>
+                  <td style={{ verticalAlign: "top" }}>
+                    {selectedRubric?.performance_metric}
+                  </td>
                 </tr>
                 <tr>
                   <th style={{ verticalAlign: "top" }}>Description</th>
-                  <td style={{ verticalAlign: "top" }}>{selectedRubric?.description}</td>
+                  <td style={{ verticalAlign: "top" }}>
+                    {selectedRubric?.description}
+                  </td>
                 </tr>
                 <tr>
                   <th style={{ verticalAlign: "top" }}>Criteria</th>
-                  <td style={{ verticalAlign: "top" }}>{selectedRubric?.criteria}</td>
+                  <td style={{ verticalAlign: "top" }}>
+                    {selectedRubric?.criteria}
+                  </td>
                 </tr>
                 <tr>
                   <th style={{ verticalAlign: "top" }}>Score System</th>
@@ -245,61 +254,69 @@ function RubricPage() {
                 </tr>
                 <tr>
                   <th style={{ verticalAlign: "top" }}>Data Source</th>
-                  <td style={{ verticalAlign: "top" }}>{selectedRubric?.data_source}</td>
+                  <td style={{ verticalAlign: "top" }}>
+                    {selectedRubric?.data_source}
+                  </td>
                 </tr>
                 <tr>
                   <th style={{ verticalAlign: "top" }}>Status Approval</th>
-                  <td style={{ verticalAlign: "top" }}>{selectedRubric?.status_approval?.toUpperCase()}</td>
+                  <td style={{ verticalAlign: "top" }}>
+                    {selectedRubric?.status_approval?.toUpperCase()}
+                  </td>
                 </tr>
               </tbody>
             </table>
           </div>
-          <div className="card-body">
-            <Form onSubmit={handleSubmitReview}>
-              <h5>Review Answer</h5>
-              <table style={{ padding: "10px" }}>
-                <tbody>
-                  <tr>
-                    <td style={{ verticalAlign: "top" }}>
-                      <strong>Comment</strong>
-                    </td>
-                    <td style={{ paddingLeft: "5px", width: "100%" }}>
-                      <Form.Control
-                        as="textarea"
-                        placeholder="Enter review comment"
-                        style={{ width: "100%" }}
-                        value={newComment}
-                        onChange={handleNewCommentChange}
-                      />
-                    </td>
-                  </tr>
-                  <tr>
-                    <td style={{ verticalAlign: "top" }}>
-                      <strong>Status</strong>
-                    </td>
-                    <td style={{ paddingLeft: "5px", width: "100%" }}>
-                      <Select
-                        onChange={(event) => handleNewStatusChange(event)}
-                        options={statusOptions}
-                      />
-                    </td>
-                  </tr>
-                  <tr>
-                    <td></td>
-                    <td>
-                      <Button
-                        style={{ marginTop: "10px" }}
-                        variant="primary"
-                        type="submit"
-                      >
-                        Submit
-                      </Button>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </Form>
-          </div>
+          {!selectedRubric?.status_approval ? (
+            <div className="card-body">
+              <Form onSubmit={handleSubmitReview}>
+                <h5>Review Answer</h5>
+                <table style={{ padding: "10px" }}>
+                  <tbody>
+                    <tr>
+                      <td style={{ verticalAlign: "top" }}>
+                        <strong>Comment</strong>
+                      </td>
+                      <td style={{ paddingLeft: "5px", width: "100%" }}>
+                        <Form.Control
+                          as="textarea"
+                          placeholder="Enter review comment"
+                          style={{ width: "100%" }}
+                          value={newComment}
+                          onChange={handleNewCommentChange}
+                        />
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style={{ verticalAlign: "top" }}>
+                        <strong>Status</strong>
+                      </td>
+                      <td style={{ paddingLeft: "5px", width: "100%" }}>
+                        <Select
+                          onChange={(event) => handleNewStatusChange(event)}
+                          options={statusOptions}
+                        />
+                      </td>
+                    </tr>
+                    <tr>
+                      <td></td>
+                      <td>
+                        <Button
+                          style={{ marginTop: "10px" }}
+                          variant="primary"
+                          type="submit"
+                        >
+                          Submit
+                        </Button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </Form>
+            </div>
+          ) : (
+            ""
+          )}
         </Modal.Body>
       </Modal>
     </div>

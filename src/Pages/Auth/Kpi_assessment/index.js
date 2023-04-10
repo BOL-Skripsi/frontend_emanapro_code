@@ -35,8 +35,10 @@ function EmployeePage() {
     { value: "1", label: "1" },
   ];
   let i = 1;
+  
   const formatDate = (dateString) => {
     const date = new Date(dateString);
+    date.setHours(date.getHours() + 7); // Add 7 hours to the date
     const options = {
       year: "numeric",
       month: "long",
