@@ -39,12 +39,10 @@ const Home = () => {
   const [hrdRubricData, setHrdRubricData] = useState([]);
   const [hrdScore, setHrdScore] = useState(0);
 
-
   const [managerPerformanceData, setManagerPerformanceData] = useState([]);
   const [managerTaskData, setManagerTaskData] = useState([]);
   const [managerAssessmentData, setManagerAssessmentData] = useState([]);
   const [managerScore, setManagerScore] = useState(0);
-
 
   const [employeePerformanceData, setEmployeePerformanceData] = useState([]);
   const [employeeOngoingData, setEmployeeOngoingData] = useState([]);
@@ -102,11 +100,16 @@ const Home = () => {
         `${process.env.REACT_APP_BASE_URL}/dashboard/hrd/kpi/`,
         config
       );
-      const averageScore =
-        response.data.reduce((total, item) => {
-          return total + parseFloat(item.final_score);
-        }, 0) / response.data.length;
-      setHrdScore(averageScore);
+      if (response.data) {
+        const averageScore =
+          response.data.reduce((total, item) => {
+            return total + parseFloat(item.final_score);
+          }, 0) / response.data.length;
+        setHrdScore(averageScore);
+      } else {
+        setHrdScore(0);
+      }
+
       setHrdPerformanceData(response.data);
     } catch (error) {
       console.error(error);
@@ -143,11 +146,15 @@ const Home = () => {
         `${process.env.REACT_APP_BASE_URL}/dashboard/manager/kpi/${userId}`,
         config
       );
-      const averageScore =
-        response.data.reduce((total, item) => {
-          return total + parseFloat(item.final_score);
-        }, 0) / response.data.length;
-      setManagerScore(averageScore);
+      if (response.data) {
+        const averageScore =
+          response.data.reduce((total, item) => {
+            return total + parseFloat(item.final_score);
+          }, 0) / response.data.length;
+        setManagerScore(averageScore);
+      } else {
+        setManagerScore(0);
+      }
       setManagerPerformanceData(response.data);
     } catch (error) {
       console.error(error);
@@ -202,11 +209,15 @@ const Home = () => {
         `${process.env.REACT_APP_BASE_URL}/dashboard/employee/kpi/${userId}`,
         config
       );
-      const averageScore =
-        response.data.reduce((total, item) => {
-          return total + parseFloat(item.final_score);
-        }, 0) / response.data.length;
-      setEmployeeScore(averageScore);
+      if (response.data) {
+        const averageScore =
+          response.data.reduce((total, item) => {
+            return total + parseFloat(item.final_score);
+          }, 0) / response.data.length;
+        setEmployeeScore(averageScore);
+      } else {
+        setEmployeeScore(0);
+      }
       setEmployeePerformanceData(response.data);
     } catch (error) {
       console.error(error);
@@ -249,7 +260,6 @@ const Home = () => {
     }
   };
 
-
   useEffect(() => {
     fetchHrdPerformanceData();
     fetchHrdRubricData();
@@ -264,7 +274,6 @@ const Home = () => {
   }, [userId]);
 
   const renderManagerCard = () => {
-
     const handlePeriodChange = (selectedOption) => {
       // setScore(Math.floor(Math.random() * 5) + 1);
     };
@@ -285,41 +294,61 @@ const Home = () => {
     const columnsTask = [
       {
         name: "Task Name",
-        selector: "team_name",
+        selector: "task_name",
         sortable: true,
       },
       {
         name: "Task Category",
-        selector: "manager_name",
+        selector: "task_category",
         sortable: true,
       },
       {
         name: "Assign To",
-        selector: "manager_name",
+        selector: "assignee_name",
         sortable: true,
       },
       {
-        name: "Due Date",
-        selector: "team_kpi_score",
+        name: "Overdue On",
+        selector: "due_datetime",
         sortable: true,
+        cell: (row) => (
+          <>
+            <div>{formatDate(row.due_datetime)}</div>
+          </>
+        ),
       },
     ];
 
     const columnsAssessment = [
       {
         name: "Team Name",
-        selector: "team_name",
+        selector: "name",
         sortable: true,
       },
       {
         name: "Assessment Progress",
         selector: "manager_name",
         sortable: true,
+        cell: (row) => (
+          <>
+            <div>{`${row.num_assessed} / ${row.num_members} Assess`}</div>
+          </>
+        ),
       },
       {
         name: "Final Score",
-        selector: "team_kpi_score",
+        selector: "final_score",
         sortable: true,
+      },
+      {
+        name: "Overdue On",
+        selector: "final_score",
+        sortable: true,
+        cell: (row) => (
+          <>
+            <div>{formatDate(row.kpi_duedate)}</div>
+          </>
+        ),
       },
     ];
 
@@ -425,10 +454,10 @@ const Home = () => {
               </div>
               <div style={{ paddingLeft: "18px", width: "200px" }}>
                 <NavLink
-                  to="/rubric_review"
+                  to="/task_management"
                   className="btn btn-primary"
                   activeClassName="active"
-                  onClick={() => setActiveLink("rubric_review")}
+                  onClick={() => setActiveLink("task_management")}
                 >
                   View Task Management
                 </NavLink>
@@ -437,7 +466,7 @@ const Home = () => {
             <div className="card-body">
               <DataTable
                 columns={columnsTask}
-                data={allKpiData}
+                data={managerTaskData}
                 noHeader
                 pagination
                 customStyles={customStyles}
@@ -469,10 +498,10 @@ const Home = () => {
               </div>
               <div style={{ paddingLeft: "30px", width: "200px" }}>
                 <NavLink
-                  to="/kpi_review"
+                  to="/kpi_assessment"
                   className="btn btn-primary"
                   activeClassName="active"
-                  onClick={() => setActiveLink("kpi_review")}
+                  onClick={() => setActiveLink("kpi_assessment")}
                 >
                   View KPI Assessment
                 </NavLink>
@@ -481,7 +510,7 @@ const Home = () => {
             <div className="card-body">
               <DataTable
                 columns={columnsAssessment}
-                data={allKpiData}
+                data={managerAssessmentData}
                 noHeader
                 pagination
                 customStyles={customStyles}
@@ -494,7 +523,6 @@ const Home = () => {
   };
 
   const renderHrdCard = () => {
-   
     const handlePeriodChange = (selectedOption) => {
       // setScore(Math.floor(Math.random() * 5) + 1);
     };
@@ -783,7 +811,7 @@ const Home = () => {
             </div>
             <div
               className="card-body"
-              style={{ maxHeight: "250px", overflowY: "auto" }}
+              style={{ maxHeight: "250px",minHeight: "250px", overflowY: "auto" }}
             >
               <DataTable
                 columns={columns}

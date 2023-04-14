@@ -1,11 +1,11 @@
-import React, { Component } from "react";
+import React, { Component, useState } from "react";
 import { useSignOut } from "react-auth-kit";
 import { useNavigate } from "react-router-dom";
-
+import { NavLink } from "react-router-dom";
 function Header() {
   const signOut = useSignOut();
   const navigate = useNavigate();
-
+  const [activeLink, setActiveLink] = useState("");
   function logout() {
     signOut();
     navigate("/login");
@@ -43,7 +43,34 @@ function Header() {
               </a>
             </div>
           </li>
-          <li className="nav-item">
+          <li className="nav-item dropdown">
+            <a className="nav-link" data-toggle="dropdown" href="#">
+              <i className="far fa-user" />
+            </a>
+            <div className="dropdown-menu dropdown-menu-md dropdown-menu-right">
+              <NavLink
+                to={"/change_password"}
+                className={`nav-link ${
+                  activeLink === "change_password" && "active"
+                }`}
+                onClick={() => setActiveLink("change_password")}
+              >
+                Change Password
+              </NavLink>
+              <a
+                className="nav-link"
+                data-widget="control-sidebar"
+                onClick={logout}
+                data-controlsidebar-slide="true"
+                href="#"
+                role="button"
+              >
+                {" "}
+                Logout
+              </a>
+            </div>
+          </li>
+          {/* <li className="nav-item">
             <a
               className="nav-link"
               data-widget="control-sidebar"
@@ -54,7 +81,7 @@ function Header() {
             >
               <i className="fas fa-sign-out-alt"></i>
             </a>
-          </li>
+          </li> */}
         </ul>
       </nav>
     </div>

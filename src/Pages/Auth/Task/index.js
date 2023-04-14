@@ -18,8 +18,10 @@ function TaskPage() {
   const [currentTeam, setCurrentTeam] = useState([]);
   const [newPersonalTasks, setNewPersonalTasks] = useState([]);
   const [teamTasks, setTeamTasks] = useState([]);
+  const [teamAssignTasks, setTeamAssignTasks] = useState([]);
   const [teamMemberData, setTeamMemberData] = useState([]);
   const [showAddTaskModal, setShowAddTaskModal] = useState(false);
+  const [showDetailTeamTaskModal, setShowDetailTeamTaskModal] = useState(false);
   const [showDetailTaskModal, setShowDetailTaskModal] = useState(false);
   const [showAddTeamTaskModal, setShowAddTeamTaskModal] = useState(false);
   const [newTask, setNewTask] = useState("");
@@ -58,7 +60,6 @@ function TaskPage() {
         `${process.env.REACT_APP_BASE_URL}/team/${userId}/me`,
         config
       );
-      console.log(response.data.team);
       setCurrentTeam(response.data.team);
     } catch (error) {
       console.error(error);
@@ -101,18 +102,41 @@ function TaskPage() {
 
   const fetchTeamTasks = async () => {
     try {
-      console.log(currentTeam);
-      const teamId = "";
       const config = {
         headers: {
           Authorization: `Bearer ${Cookies.get("_auth")}`,
         },
       };
       const response = await axios.get(
-        `${process.env.REACT_APP_BASE_URL}/task/${teamId}/team`,
+        `${process.env.REACT_APP_BASE_URL}/task/${userId}/team`,
         config
       );
-      setPersonalTasks(response.data);
+      console.log(response.data);
+      setTeamTasks(response.data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const fetchTeamTasksDetail = async (row) => {
+    try {
+      console.log(row)
+      const config = {
+        headers: {
+          Authorization: `Bearer ${Cookies.get("_auth")}`,
+        },
+      };
+      const response = await axios.post(
+        `${process.env.REACT_APP_BASE_URL}/task/${userId}/team/detail`, {
+          task_name: row.task_name,
+          task_description: row.description,
+          task_category: row.task_category,
+          task_duedate: row.due_datetime
+        },
+        config
+      );
+      console.log(response.data)
+      setTeamAssignTasks(response.data);
     } catch (error) {
       console.error(error);
     }
@@ -154,6 +178,7 @@ function TaskPage() {
 
   useEffect(() => {
     fetchMyTeam();
+    fetchTeamTasks();
     fetchPersonalTasks();
   }, []);
 
@@ -223,7 +248,7 @@ function TaskPage() {
       sortable: true,
       cell: (row) => (
         <>
-          <div>{row.has_attachment.toUpperCase()}</div>
+          <div>{row.has_attachment?.toUpperCase()}</div>
         </>
       ),
     },
@@ -300,7 +325,7 @@ function TaskPage() {
   const columnsTeam = [
     {
       name: "Task",
-      selector: "name",
+      selector: "task_name",
       sortable: true,
     },
     {
@@ -309,19 +334,108 @@ function TaskPage() {
       sortable: true,
     },
     {
-      name: "Assignee",
-      selector: "assignee_name",
+      name: "Priority",
+      selector: "description",
       sortable: true,
+      cell: (row) => (
+        <>
+          <div style={{ fontSize: "16px" }}>
+            {row.priority ? (
+              <Badge
+                pill
+                bg={
+                  row.priority === "High"
+                    ? "danger"
+                    : row.priority === "Medium"
+                    ? "warning"
+                    : "info"
+                }
+                className="p-1"
+                size="lg"
+              >
+                <strong>{row.priority}</strong>
+              </Badge>
+            ) : (
+              ""
+            )}
+          </div>
+        </>
+      ),
     },
     {
       name: "Due Date",
-      selector: "due_date",
+      selector: "due_datetime",
       sortable: true,
+      cell: (row) => (
+        <>
+          <div>{row.due_datetime ? formatDate(row.due_datetime) : ""}</div>
+        </>
+      ),
     },
     {
-      name: "Status",
+      name: "Start Date",
+      selector: "start_time",
+      sortable: true,
+      cell: (row) => (
+        <>
+          <div>{row.start_time ? formatDate(row.start_time) : ""}</div>
+        </>
+      ),
+    },
+    {
+      name: "With Attachment",
+      selector: "has_attachment",
+      sortable: true,
+      cell: (row) => (
+        <>
+          <div>{row.has_attachment?.toUpperCase()}</div>
+        </>
+      ),
+    },
+    {
+      name: "Task Status",
       selector: "status",
       sortable: true,
+      cell: (row) => (
+        <>
+          <div style={{ fontSize: "16px" }}>
+            {row.priority ? (
+              <Badge
+                pill
+                bg={
+                  row.last_reply_status === "Not Started"
+                    ? "secondary"
+                    : row.last_reply_status === "No Reply"
+                    ? "warning"
+                    : "success"
+                }
+                className="p-1"
+                size="lg"
+              >
+                <strong>{row.last_reply_status?.toUpperCase()}</strong>
+              </Badge>
+            ) : (
+              ""
+            )}
+          </div>
+        </>
+      ),
+    },
+    {
+      name: "Action",
+      cell: (row) => (
+        <>
+          <Button
+            style={{ marginLeft: 10 }}
+            variant="primary"
+            size="sm"
+            onClick={() => handleDetailTeamTaskClick(row)}
+          >
+            Detail
+          </Button>
+        </>
+      ),
+      button: true,
     },
   ];
 
@@ -363,7 +477,11 @@ function TaskPage() {
       formData.append("assign_to", userId);
       formData.append("status", "proposed");
       formData.append("file", newTaskFile);
-      await axios.post(`${process.env.REACT_APP_BASE_URL}/task/personal`, formData, config);
+      await axios.post(
+        `${process.env.REACT_APP_BASE_URL}/task/personal`,
+        formData,
+        config
+      );
       fetchPersonalTasks();
       setNewTask("");
       setNewTaskDescription("");
@@ -401,11 +519,16 @@ function TaskPage() {
         currentDate.getHours().toString().padStart(2, "0") +
         ":" +
         currentDate.getMinutes().toString().padStart(2, "0");
-      await axios.put(`${process.env.REACT_APP_BASE_URL}/task/${userId}/${taskId}/start`, {
-        start_time: isoDate,
-      });
+      await axios.put(
+        `${process.env.REACT_APP_BASE_URL}/task/${userId}/${taskId}/start`,
+        {
+          start_time: isoDate,
+        }
+      );
       fetchPersonalTasks();
+      fetchTeamTasks();
       setShowDetailTaskModal(false);
+      setShowDetailTeamTaskModal(false);
     } catch (error) {
       console.error(error);
     }
@@ -431,6 +554,7 @@ function TaskPage() {
       );
       fetchPersonalTasks();
       setShowDetailTaskModal(false);
+      setShowDetailTeamTaskModal(false);
       setNewTaskReplyDescription("");
       setNewReplyFileUpload("");
     } catch (error) {
@@ -467,11 +591,19 @@ function TaskPage() {
     setShowAddTaskModal(true);
   };
   const handleDetailTaskClick = (row) => {
+    console.log(row);
     fetchDetailTasks(row.uuid);
     fetchDetailTasksFile(row.uuid);
     fetchTaskReply(row.uuid);
     setSelectedTask(row);
     setShowDetailTaskModal(true);
+  };
+  const handleDetailTeamTaskClick = (row) => {
+    fetchTeamTasksDetail(row)
+    setSelectedTask(row);
+    fetchDetailTasksFile(row.uuid);
+    fetchTaskReply(row.uuid);
+    setShowDetailTeamTaskModal(true);
   };
   const handleNewTaskChange = (event) => {
     setNewTask(event.target.value);
@@ -552,7 +684,6 @@ function TaskPage() {
                 </div>
               </div>
             </Tab>
-            {console.log(currentTeam)}
             {Object.keys(currentTeam).length > 0 && (
               <Tab eventKey="team" title="Team Task">
                 <div className="row">
@@ -883,7 +1014,7 @@ function TaskPage() {
                         </tr>
                       )}
                       {taskReply[Object.keys(taskReply).length - 1]
-                        ?.reply_status !== "complete"  ? (
+                        ?.reply_status !== "complete" ? (
                         <>
                           <tr>
                             <td
@@ -968,6 +1099,334 @@ function TaskPage() {
           )}
         </Modal.Body>
       </Modal>
+
+      <Modal
+        show={showDetailTeamTaskModal}
+        onHide={() => setShowDetailTeamTaskModal(false)}
+      >
+        <Modal.Header>
+          <Modal.Title>
+            Detail of{" "}
+            {selectedTask?.task_name && <span>{selectedTask.task_name}</span>}
+          </Modal.Title>
+          <Button
+            variant="text"
+            onClick={() => setShowDetailTeamTaskModal(false)}
+          >
+            X
+          </Button>
+        </Modal.Header>
+        <Modal.Body>
+          <div className="card-body">
+            <h5>Task Detail</h5>
+            <table style={{ padding: "10px" }}>
+              <tbody>
+                <tr>
+                  <td style={{ verticalAlign: "top" }}>
+                    <strong>Task Name</strong>
+                  </td>
+                  <td style={{ verticalAlign: "top" }}>:</td>
+                  <td style={{ paddingLeft: "5px" }}>
+                    {selectedTask?.task_name}
+                  </td>
+                </tr>
+                <tr>
+                  <td style={{ verticalAlign: "top" }}>
+                    <strong>Description</strong>
+                  </td>
+                  <td style={{ verticalAlign: "top" }}>:</td>
+                  <td style={{ paddingLeft: "5px" }}>
+                    {selectedTask?.description}
+                  </td>
+                </tr>
+                <tr>
+                  <td style={{ verticalAlign: "top" }}>
+                    <strong>Priority</strong>
+                  </td>
+                  <td style={{ verticalAlign: "top" }}>:</td>
+                  <td style={{ paddingLeft: "5px" }}>
+                    {selectedTask?.priority}
+                  </td>
+                </tr>
+                <tr>
+                  <td style={{ verticalAlign: "top" }}>
+                    <strong>Due Date</strong>
+                  </td>
+                  <td style={{ verticalAlign: "top" }}>:</td>
+                  <td style={{ paddingLeft: "5px" }}>
+                    {selectedTask?.due_datetime
+                      ? formatDate(selectedTask?.due_datetime)
+                      : ""}
+                  </td>
+                </tr>
+                <tr>
+                  <td style={{ verticalAlign: "top" }}>
+                    <strong>Start Date</strong>
+                  </td>
+                  <td style={{ verticalAlign: "top" }}>:</td>
+                  <td style={{ paddingLeft: "5px" }}>
+                    {detailTasks.start_time
+                      ? formatDate(selectedTask?.start_time)
+                      : ""}
+                  </td>
+                </tr>
+                <tr>
+                  <td style={{ verticalAlign: "top" }}>
+                    <strong>Attachment</strong>
+                  </td>
+                  <td style={{ verticalAlign: "top" }}>:</td>
+                  <td style={{ verticalAlign: "top", paddingLeft: "5px" }}>
+                  {detailTasksFile.length > 0 ? (
+                      <>
+                        {detailTasksFile.map((file) => (
+                          <a
+                            onClick={() => downloadFile(file.file_name)}
+                            style={{
+                              color: "blue",
+                              cursor: "pointer",
+                              transition: "filter 0.2s ease",
+                            }}
+                          >
+                            {file.file_name}
+                          </a>
+                        ))}
+                      </>
+                    ) : (
+                      "No attachment"
+                    )}
+                  </td>
+                </tr>
+                
+                <tr>
+                  <td style={{ verticalAlign: "top" }}>
+                    <strong>Assign To</strong>
+                  </td>
+                  <td style={{ verticalAlign: "top" }}>:</td>
+                  <td>
+                    {teamAssignTasks.length > 0 ? (
+                      <ul>
+                        {teamAssignTasks.map((e) => (
+                          <li>{e.assigned_to_name}</li>
+                        )
+                        )}
+                      </ul>
+                    ) : ('')}
+                  </td>
+                </tr>
+                <tr>
+                  <td style={{ verticalAlign: "top" }}>
+                    <strong>Status</strong>
+                  </td>
+                  <td style={{ verticalAlign: "top" }}>:</td>
+                  <td style={{ paddingLeft: "5px" }}>
+                    {selectedTask?.status?.toUpperCase()}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          {!selectedTask?.start_time ? (
+            <Form onSubmit={handleSubmitStartTask}>
+              <div className="card-body">
+                <Button
+                  variant="primary"
+                  type="submit"
+                  disabled={selectedTask?.status === "proposed"}
+                  style={{ width: "100%" }}
+                >
+                  Start Task
+                </Button>
+              </div>
+            </Form>
+          ) : (
+            ""
+          )}
+          {selectedTask?.start_time && selectedTask?.status !== "not approve" ? (
+            <div>
+              <div className="card-body">
+                <h5>Task Reply</h5>
+                <Form onSubmit={handleSubmitReplyTask}>
+                  <table
+                    style={{
+                      padding: "10px",
+                      width: "100%",
+                    }}
+                  >
+                    <tbody>
+                      {taskReply.length > 0 ? (
+                        taskReply.map((data) => (
+                          <>
+                            <tr>
+                              <td
+                                style={{
+                                  verticalAlign: "top",
+                                  width: "20%",
+                                  paddingLeft: "5px",
+                                }}
+                              >
+                                <strong>Your Reply</strong>
+                              </td>
+                              <td
+                                style={{
+                                  verticalAlign: "top",
+                                }}
+                                width="1%"
+                              >
+                                :
+                              </td>
+                              <td
+                                style={{
+                                  paddingLeft: "5px",
+                                  width: "80%",
+                                }}
+                                colSpan={"3"}
+                              >
+                                {data.reply_comment}
+                              </td>
+                            </tr>
+                            <tr>
+                              <td></td>
+                              <td></td>
+                              <td style={{ paddingLeft: "5px" }}>
+                                <a
+                                  onClick={() => downloadFile(data.file_name)}
+                                  style={{
+                                    color: "blue",
+                                    cursor: "pointer",
+                                    transition: "filter 0.2s ease",
+                                  }}
+                                >
+                                  {data.file_name}
+                                </a>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td
+                                style={{
+                                  verticalAlign: "top",
+                                  width: "20%",
+                                  paddingLeft: "5px",
+                                }}
+                              >
+                                <strong>Manager</strong>
+                              </td>
+                              <td
+                                style={{
+                                  verticalAlign: "top",
+                                }}
+                                width="1%"
+                              >
+                                :
+                              </td>
+                              <td
+                                style={{
+                                  paddingLeft: "5px",
+                                  width: "80%",
+                                }}
+                                colSpan={"3"}
+                              >
+                                {data.revision_comment}
+                              </td>
+                            </tr>
+                            <tr>
+                              <td></td>
+                              <td></td>
+                              <td style={{ paddingLeft: "5px", color: "red" }}>
+                                {data.reply_status?.toUpperCase()}
+                              </td>
+                            </tr>
+                          </>
+                        ))
+                      ) : (
+                        <tr>
+                          <td></td>
+                          <td></td>
+                          <td></td>
+                          <td></td>
+                        </tr>
+                      )}
+                      {taskReply[Object.keys(taskReply).length - 1]
+                        ?.reply_status !== "complete" ? (
+                        <>
+                          <tr>
+                            <td
+                              style={{
+                                paddingLeft: "5px",
+                                verticalAlign: "top",
+                              }}
+                              colSpan={"3"}
+                            >
+                              <strong>Comment</strong>
+                            </td>
+                          </tr>
+                          <tr>
+                            <td
+                              style={{ paddingLeft: "5px", width: "100%" }}
+                              colSpan={"3"}
+                            >
+                              <Form.Control
+                                as="textarea"
+                                placeholder="Enter task reply description"
+                                style={{ width: "100%" }}
+                                onChange={handleNewTaskReplyDescriptionChange}
+                                disabled={detailTasks.status === "proposed"}
+                              />
+                            </td>
+                          </tr>
+                          <tr>
+                            <td
+                              style={{ paddingLeft: "5px", width: "100%" }}
+                              colSpan={"3"}
+                            >
+                              <Form.Control
+                                type="file"
+                                id="custom-file"
+                                label="Choose file"
+                                custom
+                                multiple
+                                onChange={handleNewReplyFileUploadChange}
+                                accept=".xlsx,.xls,.doc,.docx,.pdf,.zip,.rar,.ppt,.pptx"
+                                disabled={detailTasks.status === "proposed"}
+                              />
+                            </td>
+                          </tr>
+                          <tr>
+                            <td colSpan={"3"} style={{ paddingLeft: "5px" }}>
+                              <Button
+                                style={{ marginTop: "10px" }}
+                                variant="primary"
+                                type="submit"
+                                disabled={detailTasks.status === "proposed"}
+                              >
+                                Submit
+                              </Button>
+                            </td>
+                          </tr>
+                        </>
+                      ) : (
+                        <tr>
+                          <td
+                            colSpan={"3"}
+                            style={{ textAlign: "center", width: "100%" }}
+                          >
+                            {taskReply[Object.keys(taskReply).length - 1]
+                              ?.reply_status === "complete"
+                              ? ""
+                              : "Waiting for manager reply"}
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </Form>
+              </div>
+            </div>
+          ) : (
+            ""
+          )}
+        </Modal.Body>
+      </Modal>
+
       <Modal
         show={showAddTeamTaskModal}
         onHide={() => setShowAddTeamTaskModal(false)}

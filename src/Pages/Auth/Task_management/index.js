@@ -15,17 +15,20 @@ function TaskPage() {
   const [teamTasks, setTeamTasks] = useState([]);
   const [detailTasks, setDetailTasks] = useState([]);
   const [taskReply, setTaskReply] = useState([]);
+  const [teamTaskReply, setTeamTaskReply] = useState([]);
   const [detailTasksFile, setDetailTasksFile] = useState([]);
   const [assignToData, setassignToData] = useState([]);
   // const [newPersonalTasks, setNewPersonalTasks] = useState([]);
   const [newComment, setNewComment] = useState("");
   const [newStatus, setNewStatus] = useState("");
   const [teamMemberData, setTeamMemberData] = useState([]);
+  const [assignToTeamData, setAssignToTeamData] = useState([]);
   const [showAddTaskModal, setShowAddTaskModal] = useState(false);
   const [showDetailTaskModal, setShowDetailTaskModal] = useState(false);
   const [showDetailTaskTeamModal, setShowDetailTaskTeamModal] = useState(false);
   const [showAddTeamTaskModal, setShowAddTeamTaskModal] = useState(false);
   const [newTask, setNewTask] = useState("");
+  const [newAssignTo, setNewAssignTo] = useState("");
   const [newTaskAssign, setNewTaskAssign] = useState("");
   const [newTaskAssignTo, setNewTaskAssignTo] = useState([]);
   const [newTaskDescription, setNewTaskDescription] = useState("");
@@ -150,17 +153,15 @@ function TaskPage() {
         },
       };
       const response = await axios.post(
-        `${process.env.REACT_APP_BASE_URL}/task/team/reply`,{
-          attachment_name : taskInfo.attachment_name,
-          description : taskInfo.description,
-          due_datetime : taskInfo.due_datetime,
-          task_name : taskInfo.task_name,
-          priority : taskInfo.priority,
-          status : taskInfo.status
+        `${process.env.REACT_APP_BASE_URL}/task/team/reply`,
+        {
+          task_name: taskInfo.task_name,
+          description: taskInfo.description,
+          due_datetime: taskInfo.due_datetime,
         },
         config
       );
-      setTaskReply(response.data);
+      setTeamTaskReply(response.data);
     } catch (error) {
       console.error(error);
     }
@@ -489,7 +490,11 @@ function TaskPage() {
       formData.append("status", "approve");
       formData.append("file", newTaskFile);
       console.log(formData);
-      await axios.post(`${process.env.REACT_APP_BASE_URL}/task/personal`, formData, config);
+      await axios.post(
+        `${process.env.REACT_APP_BASE_URL}/task/personal`,
+        formData,
+        config
+      );
       fetchMyJuridictionPersonalTasks();
       setShowAddTaskModal(false);
       setNewTask("");
@@ -509,6 +514,10 @@ function TaskPage() {
   };
   const handleNewStatusChange = (event) => {
     setNewStatus(event.value);
+  };
+
+  const handleNewAssignToChange = (event) => {
+    setNewAssignTo(event.value);
   };
 
   const handleSubmitApproval = async (event) => {
@@ -548,8 +557,13 @@ function TaskPage() {
       formData.append("assign_to", JSON.stringify(newTaskAssignTo));
       formData.append("status", "approve");
       formData.append("file", newTaskFile);
-      await axios.post(`${process.env.REACT_APP_BASE_URL}/task/team`, formData, config);
+      await axios.post(
+        `${process.env.REACT_APP_BASE_URL}/task/team`,
+        formData,
+        config
+      );
       fetchMyJuridictionPersonalTasks();
+      fetchMyJuridictionTeamTasks();
       setShowAddTeamTaskModal(false);
       setNewTask("");
       setNewTaskDescription("");
@@ -567,13 +581,40 @@ function TaskPage() {
     try {
       console.log(newComment);
       const taskId = selectedTask.uuid;
-      await axios.put(`${process.env.REACT_APP_BASE_URL}/task/${taskId}/manager_reply`, {
-        description: newComment,
-        status: newStatus,
-      });
+      await axios.put(
+        `${process.env.REACT_APP_BASE_URL}/task/${taskId}/manager_reply`,
+        {
+          description: newComment,
+          status: newStatus,
+        }
+      );
+      setShowDetailTaskModal(false);
+      setShowDetailTaskTeamModal(false);
+      setNewComment("");
+      setNewStatus("");
+      fetchMyJuridictionPersonalTasks();
+      fetchMyJuridictionTeamTasks();
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleManagerTeamReply = async (event) => {
+    event.preventDefault();
+    try {
+      const taskId = newAssignTo;
+      await axios.put(
+        `${process.env.REACT_APP_BASE_URL}/task/${taskId}/manager_reply`,
+        {
+          description: newComment,
+          status: newStatus,
+        }
+      );
+      setNewAssignTo("");
       setShowDetailTaskModal(false);
       setNewComment("");
       setNewStatus("");
+      fetchMyJuridictionTeamTasks();
       fetchMyJuridictionPersonalTasks();
     } catch (error) {
       console.error(error);
@@ -630,8 +671,15 @@ function TaskPage() {
   const handleDetailTaskTeamClick = (row) => {
     fetchTeamTaskReply(row);
     setSelectedTask(row);
+    console.log(row.assign_to);
+    const transformedData = row.assign_to_uuid.split(",").map((uuid, index) => ({
+      value: uuid,
+      label: row.assign_to.split(",")[index].trim(),
+    }));
+    setAssignToTeamData(transformedData);
     setShowDetailTaskTeamModal(true);
   };
+  
 
   const handleNewTaskChange = (event) => {
     setNewTask(event.target.value);
@@ -1392,13 +1440,11 @@ function TaskPage() {
                   <td style={{ verticalAlign: "top" }}>:</td>
                   <td>
                     <ul>
-                      {selectedTask?.assign_to.split(",")?.map((e, index) => 
+                      {selectedTask?.assign_to.split(",")?.map((e, index) => (
                         <>
-                        <li key={index}>
-                          {e.trim()}
-                        </li>
+                          <li key={index}>{e.trim()}</li>
                         </>
-                      )}
+                      ))}
                     </ul>
                   </td>
                 </tr>
@@ -1407,10 +1453,10 @@ function TaskPage() {
           </div>
           <div className="card-body">
             <h5>Task Reply</h5>
-            <Form onSubmit={handleManagerReply}>
+            <Form onSubmit={handleManagerTeamReply}>
               <table style={{ padding: "10px" }}>
                 <tbody>
-                  {/* {teamTaskReply.length > 0 ? (
+                  {teamTaskReply.length > 0 ? (
                     teamTaskReply.map((data) => (
                       <>
                         <tr>
@@ -1421,7 +1467,7 @@ function TaskPage() {
                               paddingLeft: "5px",
                             }}
                           >
-                            <strong>{selectedTask?.user_name}</strong>
+                            <strong>{data.assigned_to_name}</strong>
                           </td>
                           <td
                             style={{
@@ -1502,11 +1548,24 @@ function TaskPage() {
                       <td></td>
                     </tr>
                   )}
-                  {taskReply.length > 0 ? (
+                  {teamTaskReply.length > 0 && teamTaskReply[Object.keys(teamTaskReply).length - 1]
+                        ?.reply_status !== "complete" ? (
                     <>
                       <tr>
                         <td style={{ paddingLeft: "5px", paddingTop: "30px" }}>
                           <b>Comment</b>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td
+                          style={{ paddingLeft: "5px", width: "100%" }}
+                          colSpan={"3"}
+                        >
+                          <Select
+                            placeholder="Reply To"
+                            onChange={(event) => handleNewAssignToChange(event)}
+                            options={assignToTeamData}
+                          />
                         </td>
                       </tr>
                       <tr>
@@ -1560,10 +1619,13 @@ function TaskPage() {
                         colSpan={"3"}
                         style={{ textAlign: "center", width: "100%" }}
                       >
-                        Waiting for reply
+                        {teamTaskReply[Object.keys(teamTaskReply).length - 1]
+                          ?.reply_status === "complete"
+                          ? ""
+                          : "Waiting for reply"}
                       </td>
                     </tr>
-                  )} */}
+                  )}
                 </tbody>
               </table>
             </Form>

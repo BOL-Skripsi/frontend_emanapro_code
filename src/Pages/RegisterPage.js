@@ -100,19 +100,6 @@ function RegisterPage() {
                 </div>
               </div>
               <div className="row">
-                <div className="col-8">
-                  <div className="icheck-primary">
-                    <input
-                      type="checkbox"
-                      id="agreeTerms"
-                      name="terms"
-                      defaultValue="agree"
-                    />
-                    <label htmlFor="agreeTerms">
-                      I agree to the <a href="#">terms</a>
-                    </label>
-                  </div>
-                </div>
                 <div className="col-4">
                   <button type="submit" className="btn btn-primary btn-block">
                     Register

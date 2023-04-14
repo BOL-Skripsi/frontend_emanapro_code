@@ -90,13 +90,14 @@ function TeamPage() {
 
   const fetchThisTeamMemberList = async (teamId) => {
     try {
+      const orgId = "71152531-e247-467f-8839-b78c14d7f71e";
       const config = {
         headers: {
           Authorization: `Bearer ${Cookies.get("_auth")}`,
         },
       };
       const response = await axios.get(
-        `${process.env.REACT_APP_BASE_URL}/team/${teamId.uuid}/member/list`,
+        `${process.env.REACT_APP_BASE_URL}/team/${teamId.uuid}/${orgId}/member/list`,
         config
       );
       setThisTeamMember(response.data.teams);

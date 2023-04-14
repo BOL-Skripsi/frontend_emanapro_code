@@ -24,7 +24,7 @@ function TaskPage() {
         },
       };
       const response = await axios.get(
-        `http://localhost:3000/team/${userId}/me`,
+        `${process.env.REACT_APP_BASE_URL}/team/${userId}/me`,
         config
       );
       fetchTeamMember(response.data.team);

@@ -50,11 +50,11 @@ function Login() {
   return (
     <div
       className="d-flex justify-content-center align-items-center h-100"
-      style={{ display: "flex", justifyContent: "center" }}
+      style={{ display: "flex", justifyContent: "center"}}
     >
       <div className="login-box">
         <div className="login-logo">
-          <a href="../../index2.html">
+          <a href="/">
             <b>e-Manapro</b>
           </a>
         </div>
@@ -93,12 +93,6 @@ function Login() {
                 </div>
               </div>
               <div className="row">
-                <div className="col-8">
-                  <div className="icheck-primary">
-                    <input type="checkbox" id="remember" />
-                    <label htmlFor="remember">Remember Me</label>
-                  </div>
-                </div>
                 {/* /.col */}
                 <div className="col-4">
                   <button type="submit" className="btn btn-primary btn-block">

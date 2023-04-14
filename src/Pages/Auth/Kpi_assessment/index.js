@@ -27,6 +27,9 @@ function EmployeePage() {
   const [selectedCategoryKpi, setSelectedCategoryKpi] = useState(null);
   const [selectedAssessmentKpi, setSelectedAssessmentKpi] = useState(null);
   const [newScoreDescription, setNewScoreDescription] = useState("");
+  const [period, setPeriod] = useState(null);
+
+
   const scoreOption = [
     { value: "5", label: "5" },
     { value: "4", label: "4" },
@@ -35,7 +38,7 @@ function EmployeePage() {
     { value: "1", label: "1" },
   ];
   let i = 1;
-  
+
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     date.setHours(date.getHours() + 7); // Add 7 hours to the date
@@ -106,9 +109,31 @@ function EmployeePage() {
     }
   };
 
+  const fetchKpiPeriod = async () => {
+    try {
+      const config = {
+        headers: {
+          Authorization: `Bearer ${Cookies.get("_auth")}`,
+        },
+      };
+      const response = await axios.get(
+        `${process.env.REACT_APP_BASE_URL}/kpi/period/`,
+        config
+      );
+      const transformedData = response.data.map((item) => ({
+        value: item.uuid,
+        label: item.kpi_period,
+      }));
+      setPeriod(transformedData);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   useEffect(() => {
     fetchKpiData(userId);
-  }, []);
+    fetchKpiPeriod();
+  }, [userId]);
 
   const handleMemberKpiClick = (row) => {
     fetchKpiAssessmentForm(
@@ -153,10 +178,14 @@ function EmployeePage() {
     setNewScoreDescription(event.target.value);
   };
 
+  const handlePeriodChange = (selectedOption) => {
+    // setScore(Math.floor(Math.random() * 5) + 1);
+  };
+
   const handleSubmitKpi = async (event) => {
     event.preventDefault();
     try {
-      // const orgId = "71152531-e247-467f-8839-b78c14d7f71e";
+      // const orgId = "71152531-e247-467f-8839-b78c14d7f71e";  
       const config = {
         headers: {
           Authorization: `Bearer ${Cookies.get("_auth")}`,
@@ -634,8 +663,12 @@ function EmployeePage() {
               <div className="card">
                 <div className="card-header">
                   <div className="card-tools">
-                    <div>
-                      PERIOD
+                    <div style={{width: '150px'}}>
+                      <Select
+                        value={period}
+                        onChange={handlePeriodChange}
+                        options={period}
+                      />
                     </div>
                   </div>
                 </div>
